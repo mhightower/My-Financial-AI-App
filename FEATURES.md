@@ -2,74 +2,61 @@
 
 ## MVP (Minimum Viable Product)
 
+### Summary
+
+A personal stock & ETF tracker that enforces investment discipline through documented decision-making. Users define investment theses (buy reasons) and exit criteria (sell reasons) before purchasing, helping reduce emotional decisions and improve long-term returns. Track multiple watchlists, manage investment triggers, and maintain a clear audit trail of your investment logic.
+
+### Stock Data API
+
+- [ ] https://www.alphavantage.co/documentation/
+- [X] Install Alpha Vantage MPC
+
 ### User Management
-- [ ] User registration
-- [ ] User login/authentication
-- [ ] User profile management
-- [ ] Password reset
+
+- [ ] Add a User
+- [ ] Delete a User
+- [ ] Switch between Users
 
 ### Dashboard
-- [ ] Dashboard overview page
-- [ ] Account balance display
-- [ ] Recent transactions list
-- [ ] Quick statistics
 
-### Transactions
-- [ ] Add transaction
-- [ ] View transaction history
-- [ ] Edit transaction
-- [ ] Delete transaction
-- [ ] Filter transactions by date range
-- [ ] Categorize transactions
+- [ ] Dashboard overview page
+- [ ] List of Stocks
+- [ ] List of Stocks being Followed
+- [ ] List of Watch Lists
+
+### Thesis
+
+- [ ] Why should one buy the stock
+- [ ] Why should one sell the stock
+
+### Triggers
+
+- [ ] When to buy
+- [ ] When to sell
+
+### Watchlists
+
+- [ ] Create Watchlist
+- [ ] Edit Watchlist
+- [ ] Delete Watchlist
+- [ ] Show Description of Watchlist
+- [ ] Move stock from Watchlist to another Watchlist
+
+#### A Watchlist
+
+- [ ] CRUD stocks to the Watchlist
+- [ ] Has text that shows why it was created
+- [ ] Max list of stocks is 15
 
 ### Accounts
-- [ ] Create account
-- [ ] View account details
-- [ ] Edit account
-- [ ] Delete account
-- [ ] View account balance history
+
+- [ ] Create Brokerage Account
 
 ## Phase 2
 
 ### Analytics & Reporting
+
 - [ ] Monthly spending report
 - [ ] Category breakdown chart
 - [ ] Income vs expense visualization
 - [ ] Trend analysis
-
-### Budget Management
-- [ ] Create budget
-- [ ] Set budget limits per category
-- [ ] Track budget progress
-- [ ] Budget alerts
-
-### Data Management
-- [ ] Export data to CSV
-- [ ] Import transactions
-- [ ] Backup functionality
-
-## Phase 3
-
-### Advanced Features
-- [ ] Recurring transactions
-- [ ] Investment tracking
-- [ ] Goal tracking
-- [ ] Net worth calculation
-- [ ] Bill reminders
-
-### Integrations
-- [ ] Bank API integration
-- [ ] Payment gateway integration
-- [ ] Calendar sync
-
-### Mobile
-- [ ] Responsive mobile design
-- [ ] Native mobile app (optional)
-
-## Backlog
-
-- Push notifications
-- Two-factor authentication
-- API rate limiting
-- Data encryption
-- Multi-currency support
