@@ -27,7 +27,7 @@ This is a Vue 3 financial application with a FastAPI backend. The frontend uses 
 
 ## Project Structure
 
-```
+```text
 Frontend (Vue 3):
   src/
     main.js            - Vue app entry point, creates root instance
@@ -123,9 +123,9 @@ This app enforces **discipline through documented reasoning**, not automated tra
 
 ### Design Constraints
 
-- **Local-first**: Data stored in browser (IndexedDB/localStorage), no backend database for MVP
+- **Local-first**: User profile and preferences stored in browser (IndexedDB/localStorage); persistent data (watchlists, holdings, theses) stored in backend SQLite
 - **User-scoped**: Each user has isolated data (watchlists, holdings, preferences)
-- **API-first**: Frontend calls Alpha Vantage + backend HTTP routes
+- **API-first**: Frontend calls the backend only — **never call Alpha Vantage or any external API directly from the frontend**. The backend is the sole gateway to Alpha Vantage and is responsible for caching responses to manage rate limits.
 - **Simple navigation**: Single-page app with modals, no complex routing needed yet
 
 ## Data Model
@@ -172,7 +172,7 @@ StockData (external, from Alpha Vantage)
 
 ### Data Flow (User Journey)
 
-1. **Search** → User searches for stock → frontend calls Alpha Vantage (cached)
+1. **Search** → User searches for stock → frontend calls backend → backend calls Alpha Vantage (cached)
 2. **Add to Watchlist** → User adds to watchlist with thesis (buy/sell reasons)
 3. **Set Triggers** → User defines buy target, sell target, stop-loss %
 4. **Track Holdings** → User logs buy trade → creates Holding, links to thesis
