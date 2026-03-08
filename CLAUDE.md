@@ -72,6 +72,119 @@ Backend (FastAPI):
 4. Run backend: `cd backend && uv run uvicorn app.main:app --reload`
 5. Frontend runs on [localhost:5173](http://localhost:5173), backend on [localhost:8000](http://localhost:8000)
 
+## Development Practices
+
+### Test-First Development
+
+To reduce bugs and unneeded code this app will be using TDD (Test Driven Design).
+
+**All new functionality must have tests written first, then implementation.** This ensures:
+
+- Features are testable by design
+- Requirements are clarified before coding
+- Regressions are caught early
+- Code quality and coverage remain high
+
+**Workflow:**
+
+1. Write tests for the new feature (component, route, service, etc.)
+2. Run tests to confirm they fail
+3. Implement functionality to make tests pass
+4. Refactor while keeping tests green
+
+**Running Tests:**
+
+- **Frontend:** `npm run test` (one-time run) or `npm run test:watch` (watch mode)
+- **Backend:** `cd backend && uv run pytest` or `uv run pytest -v` for verbose output
+
+## Design Philosophy & MVP Scope
+
+### Core Principle: Investment Discipline Through Documentation
+
+This app enforces **discipline through documented reasoning**, not automated trading or predictions. The core insight: emotional investing is the biggest risk to returns. By requiring users to write down their theses (why buy/sell) *before* purchasing, the app reduces guessing and encourages intentional decision-making.
+
+### MVP Strategy
+
+**MVP Focus:** Personal stock/ETF tracking with thesis + triggers.
+
+- **Multi-user support** (local profiles only, no authentication in MVP)
+- **Watchlists** to organize stocks by strategy/thesis
+- **Investment Thesis** (buy reasons + sell conditions attached to each stock)
+- **Price Triggers** (buy target, sell target, stop-loss)
+- **Holdings tracking** (record actual trades, track P&L)
+- **Real-time data** via Alpha Vantage (stock prices, fundamentals, history)
+
+**NOT in MVP (Phase 2 features):**
+
+- Advanced analytics (portfolio performance, win rate, thesis accuracy)
+- Portfolio optimization, risk scoring, sector analysis
+- Tax reporting, cost basis accounting
+- Alerts/notifications
+
+### Design Constraints
+
+- **Local-first**: Data stored in browser (IndexedDB/localStorage), no backend database for MVP
+- **User-scoped**: Each user has isolated data (watchlists, holdings, preferences)
+- **API-first**: Frontend calls Alpha Vantage + backend HTTP routes
+- **Simple navigation**: Single-page app with modals, no complex routing needed yet
+
+## Data Model
+
+### Core Entities (MVP)
+
+```text
+User
+  ├─ profiles (multiple local users, browser-stored)
+  ├─ watchlists[]
+  └─ holdings[]
+
+Watchlist
+  ├─ name, description, created_date
+  ├─ stocks[] (max 15)
+  └─ owner_user_id
+
+StockInWatchlist
+  ├─ ticker, symbol
+  ├─ thesis: { buy_reasons, sell_conditions }
+  ├─ triggers: { buy_price, sell_price, stop_loss_pct }
+  ├─ added_date
+  └─ watchlist_id
+
+Holding
+  ├─ ticker, symbol
+  ├─ quantity, entry_price, entry_date
+  ├─ current_value, unrealized_gain_loss, return_pct
+  ├─ account_id
+  └─ user_id
+
+BrokerageAccount
+  ├─ name, account_type (taxable/IRA/Roth)
+  ├─ broker_name
+  └─ user_id
+
+StockData (external, from Alpha Vantage)
+  ├─ ticker, company_name
+  ├─ current_price, daily_change_pct, volume
+  ├─ p_e_ratio, market_cap, dividend_yield
+  ├─ 52_week_high, 52_week_low
+  └─ cached_timestamp (for rate-limit management)
+```
+
+### Data Flow (User Journey)
+
+1. **Search** → User searches for stock → frontend calls Alpha Vantage (cached)
+2. **Add to Watchlist** → User adds to watchlist with thesis (buy/sell reasons)
+3. **Set Triggers** → User defines buy target, sell target, stop-loss %
+4. **Track Holdings** → User logs buy trade → creates Holding, links to thesis
+5. **Monitor** → Dashboard shows portfolio value, P&L, watchlist top movers
+6. **Close Position** → User logs sell trade → calculates realized gain/loss
+
+### Storage (MVP)
+
+- **Frontend**: IndexedDB or localStorage for temporary data (profiles, watchlists, holdings, theses)
+- **Backend**: SQLite database for persistent data (users, watchlists, holdings, theses, account data). Alpha Vantage API for market data (with server-side caching to minimize API calls)
+- **Phase 2**: Migrate to PostgreSQL + cloud backend for multi-device sync, cloud backup, shared portfolios
+
 ## Key Dependencies
 
 **Frontend:**
