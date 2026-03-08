@@ -16,13 +16,13 @@ This is a Vue 3 financial application with a FastAPI backend. The frontend uses 
 - **`npm run preview`** - Preview production build locally
 - **`npm run lint`** - Lint and auto-fix code style issues
 
-### Backend (FastAPI)
+### Backend (FastAPI with uv)
 
-- **`cd backend && python -m venv venv`** - Create Python virtual environment
-- **`source venv/bin/activate`** (Linux/Mac) or **`venv\Scripts\activate`** (Windows) - Activate virtual environment
-- **`pip install -r requirements.txt`** - Install Python dependencies
-- **`python -m uvicorn app.main:app --reload`** - Start development server on [localhost:8000](http://localhost:8000)
-- **`python -m uvicorn app.main:app --reload --host 0.0.0.0`** - Run on all interfaces
+- **`cd backend && uv sync`** - Install Python dependencies (creates .venv automatically)
+- **`cd backend && uv run uvicorn app.main:app --reload`** - Start development server on [localhost:8000](http://localhost:8000)
+- **`cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0`** - Run on all interfaces
+- **`cd backend && uv sync --extra dev`** - Install dev dependencies (includes pytest)
+- **`cd backend && uv run pytest`** - Run tests
 - **Visit [localhost:8000/docs](http://localhost:8000/docs)** - Interactive API documentation (Swagger UI)
 
 ## Project Structure
@@ -43,7 +43,7 @@ Backend (FastAPI):
     app/
       main.py          - FastAPI application and routes
       __init__.py
-    requirements.txt   - Python dependencies
+    pyproject.toml     - Python project config and dependencies (uv)
     .env.example       - Example environment variables
 ```
 
@@ -64,10 +64,12 @@ Backend (FastAPI):
 
 ## Getting Started
 
+**Prerequisites:** Install [uv](https://docs.astral.sh/uv/getting-started/) for Python package management.
+
 1. Clone the repo and run `npm install` (frontend)
-2. Set up backend: `cd backend && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt`
+2. Set up backend: `cd backend && uv sync`
 3. Run frontend: `npm run dev` (from root)
-4. Run backend: `python -m uvicorn app.main:app --reload` (from backend directory)
+4. Run backend: `cd backend && uv run uvicorn app.main:app --reload`
 5. Frontend runs on [localhost:5173](http://localhost:5173), backend on [localhost:8000](http://localhost:8000)
 
 ## Key Dependencies
