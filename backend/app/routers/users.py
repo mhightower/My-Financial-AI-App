@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import List
 from ..database import get_db
 from ..models import User, Watchlist
-from ..schemas import UserCreate, UserUpdate, UserResponse, UserDetailResponse, WatchlistResponse
+from ..schemas import UserCreate, UserUpdate, UserResponse, UserDetailResponse, WatchlistResponse, WatchlistDetailResponse
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 
@@ -86,7 +86,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     return None
 
 
-@router.get("/{user_id}/watchlists", response_model=List[WatchlistResponse])
+@router.get("/{user_id}/watchlists", response_model=List[WatchlistDetailResponse])
 def get_user_watchlists(user_id: int, db: Session = Depends(get_db)):
     """Get all watchlists for a user"""
     user = db.query(User).filter(User.id == user_id).first()

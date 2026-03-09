@@ -20,7 +20,7 @@ The app targets busy, disciplined investors who make intentional decisions. They
 ### Visual Approach
 
 - **Minimalist & focused**: Remove noise, highlight what matters (thesis, triggers, current value)
-- **Dark/light modes** (or specify): [Choose one for MVP]
+- **Dark/light modes**: Dark
 - **Information hierarchy**: Thesis > Current Price > Triggers > Historical Data
 - **Layout**: Card-based with clear sections (watchlists, holdings, accounts)
 
