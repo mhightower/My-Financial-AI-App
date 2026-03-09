@@ -6,6 +6,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Vue 3 financial application with a FastAPI backend. The frontend uses Vite as the build tool and the backend provides REST APIs for financial operations.
 
+## Design System & UI Guidelines
+
+### Persona & Design Intent
+
+The app targets busy, disciplined investors who make intentional decisions. They want:
+
+- **Quick visual scanning** - no time to read walls of text
+- **Thesis as context** - always visible why they own/owned a stock
+- **Clear status at a glance** - P&L, triggers, holdings organized logically
+- **Fast data entry** - add stocks, log trades, record theses with minimal friction
+
+### Visual Approach
+
+- **Minimalist & focused**: Remove noise, highlight what matters (thesis, triggers, current value)
+- **Dark/light modes** (or specify): [Choose one for MVP]
+- **Information hierarchy**: Thesis > Current Price > Triggers > Historical Data
+- **Layout**: Card-based with clear sections (watchlists, holdings, accounts)
+
+### Key Principles
+
+1. **Thesis-first**: Every stock view shows its thesis prominently
+2. **Scan-friendly**: Use cards, icons, color coding for quick status checks
+3. **Mobile-conscious**: Busy person might check on phone (responsive design)
+
 ## Development Commands
 
 ### Frontend (Vue 3)
