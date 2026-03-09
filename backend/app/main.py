@@ -1,6 +1,21 @@
+# Load environment variables from .env file BEFORE importing anything else
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env file from the backend directory
+backend_dir = Path(__file__).parent.parent
+env_file = backend_dir / ".env"
+load_dotenv(env_file)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from .database import engine, Base
+from .routers import users, watchlists, holdings, stocks, sell_transactions
+
+# Initialize database tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Financial App API",
@@ -16,6 +31,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register routers
+app.include_router(users.router)
+app.include_router(watchlists.router)
+app.include_router(holdings.router)
+app.include_router(stocks.router)
+app.include_router(sell_transactions.router)
 
 
 class HealthResponse(BaseModel):
