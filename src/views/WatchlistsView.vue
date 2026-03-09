@@ -62,11 +62,9 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useWatchlistsStore } from '../stores/watchlists'
 
-const router = useRouter()
 const userStore = useUserStore()
 const watchlistsStore = useWatchlistsStore()
 

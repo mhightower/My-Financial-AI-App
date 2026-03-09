@@ -35,11 +35,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from './stores/user'
 import UserSwitcherModal from './components/UserSwitcherModal.vue'
 
-const router = useRouter()
 const userStore = useUserStore()
 const userModal = ref(null)
 
