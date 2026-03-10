@@ -1,68 +1,77 @@
 <template>
-  <div class="holdings-view">
-    <div class="container">
-      <button @click="$router.back()" class="btn-back">← Back</button>
-      <h1>Holdings & Portfolio</h1>
-
-      <div v-if="!currentUser" class="no-user">
-        <p>Please select a user to view holdings.</p>
+  <div class="view">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Holdings</h1>
+        <p class="page-subtitle">Portfolio positions &amp; cost basis</p>
       </div>
-
-      <div v-else>
-        <div class="portfolio-summary">
-          <h2>Portfolio Summary</h2>
-          <div class="metrics">
-            <div class="metric">
-              <span class="label">Total Holdings</span>
-              <span class="value">{{ holdings.length }}</span>
-            </div>
-            <div class="metric">
-              <span class="label">Total Cost Basis</span>
-              <span class="value">${{ totalCostBasis.toFixed(2) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="holdings-list">
-          <div class="list-header">
-            <h2>Your Holdings</h2>
-            <button @click="openAddModal" class="btn-add">+ Add Holding</button>
-          </div>
-          <div v-if="holdings.length > 0" class="holdings-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ticker</th>
-                  <th>Quantity</th>
-                  <th>Entry Price</th>
-                  <th>Date</th>
-                  <th>Cost Basis</th>
-                  <th>Account</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="holding in holdings" :key="holding.id">
-                  <td><strong>{{ holding.ticker }}</strong></td>
-                  <td>{{ holding.quantity }}</td>
-                  <td>${{ holding.entry_price.toFixed(2) }}</td>
-                  <td>{{ formatDate(holding.entry_date) }}</td>
-                  <td>${{ (holding.quantity * holding.entry_price).toFixed(2) }}</td>
-                  <td>{{ getAccountName(holding.account_id) }}</td>
-                  <td>
-                    <button @click="closePositionModal(holding)" class="btn-action">Close</button>
-                    <button @click="deleteHoldingConfirm(holding.id)" class="btn-action delete">Delete</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div v-else class="empty">
-            <p>No holdings yet. Start building your portfolio!</p>
-          </div>
-        </div>
-      </div>
+      <button v-if="currentUser" @click="openAddModal" class="btn btn-primary">+ Add Holding</button>
     </div>
+
+    <div v-if="!currentUser" class="panel empty-state">
+      <p>Please select a user to view holdings.</p>
+    </div>
+
+    <template v-else>
+      <!-- Summary metrics -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <span class="metric-label">Total Positions</span>
+          <span class="metric-value mono-amber">{{ holdings.length }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Total Cost Basis</span>
+          <span class="metric-value mono-amber">${{ totalCostBasis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Accounts</span>
+          <span class="metric-value mono-muted">{{ accounts.length }}</span>
+        </div>
+      </div>
+
+      <!-- Holdings table -->
+      <div class="panel" v-if="holdings.length > 0">
+        <div class="panel-header">
+          <span class="panel-title">Positions</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Qty</th>
+                <th>Entry Price</th>
+                <th>Date</th>
+                <th>Cost Basis</th>
+                <th>Account</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="holding in holdings" :key="holding.id">
+                <td><span class="mono-amber" style="font-size:0.95rem; font-weight:600;">{{ holding.ticker }}</span></td>
+                <td><span class="mono">{{ holding.quantity }}</span></td>
+                <td><span class="mono">${{ holding.entry_price.toFixed(2) }}</span></td>
+                <td><span class="mono-muted" style="font-size:0.8rem;">{{ formatDate(holding.entry_date) }}</span></td>
+                <td><span class="mono-amber">${{ (holding.quantity * holding.entry_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span></td>
+                <td><span style="color:var(--text-1); font-size:0.82rem;">{{ getAccountName(holding.account_id) }}</span></td>
+                <td>
+                  <div class="row-actions">
+                    <button @click="closePositionModal(holding)" class="btn btn-ghost btn-sm">Close</button>
+                    <button @click="deleteHoldingConfirm(holding.id)" class="btn btn-danger btn-sm">✕</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div v-else class="panel empty-state">
+        <p>No holdings yet.</p>
+        <p style="margin-top:0.5rem; font-size:0.8rem;">Add a holding to track your portfolio positions.</p>
+      </div>
+    </template>
 
     <!-- Add Holding Modal -->
     <div v-if="showAddModal" class="modal-overlay" @click.self="closeAddModal">
@@ -74,7 +83,7 @@
         <form @submit.prevent="addHolding" class="modal-body">
           <div class="form-group">
             <label for="ticker">Ticker *</label>
-            <input id="ticker" v-model="addForm.ticker" type="text" placeholder="e.g., AAPL" required />
+            <input id="ticker" v-model="addForm.ticker" type="text" placeholder="e.g. AAPL" required />
           </div>
           <div class="form-group">
             <label for="account">Account *</label>
@@ -86,23 +95,25 @@
           <div class="form-row">
             <div class="form-group">
               <label for="quantity">Quantity *</label>
-              <input id="quantity" v-model.number="addForm.quantity" type="number" step="0.01" required />
+              <input id="quantity" v-model.number="addForm.quantity" type="number" step="0.01" placeholder="0" required />
             </div>
             <div class="form-group">
               <label for="price">Entry Price *</label>
-              <input id="price" v-model.number="addForm.entry_price" type="number" step="0.01" required />
+              <input id="price" v-model.number="addForm.entry_price" type="number" step="0.01" placeholder="0.00" required />
             </div>
           </div>
           <div class="form-group">
             <label for="notes">Notes</label>
-            <textarea id="notes" v-model="addForm.notes" rows="2"></textarea>
+            <textarea id="notes" v-model="addForm.notes" rows="2" placeholder="Optional trade notes…"></textarea>
           </div>
+          <div v-if="error" class="error-msg">{{ error }}</div>
           <div class="form-actions">
-            <button type="button" @click="closeAddModal" class="btn-cancel">Cancel</button>
-            <button type="submit" class="btn-submit" :disabled="loading">{{ loading ? 'Adding...' : 'Add' }}</button>
+            <button type="button" @click="closeAddModal" class="btn btn-ghost">Cancel</button>
+            <button type="submit" class="btn btn-primary" :disabled="loading">
+              {{ loading ? 'Adding…' : 'Add' }}
+            </button>
           </div>
         </form>
-        <div v-if="error" class="error-msg">{{ error }}</div>
       </div>
     </div>
 
@@ -110,7 +121,7 @@
     <div v-if="showSellModal" class="modal-overlay" @click.self="closeSellModal">
       <div class="modal">
         <div class="modal-header">
-          <h2>Close Position: {{ sellForm.ticker }}</h2>
+          <h2>Close Position — {{ sellForm.ticker }}</h2>
           <button @click="closeSellModal" class="close-btn">✕</button>
         </div>
         <form @submit.prevent="closePosion" class="modal-body">
@@ -121,19 +132,21 @@
             </div>
             <div class="form-group">
               <label for="sell-price">Price Received *</label>
-              <input id="sell-price" v-model.number="sellForm.price_received" type="number" step="0.01" required />
+              <input id="sell-price" v-model.number="sellForm.price_received" type="number" step="0.01" placeholder="0.00" required />
             </div>
           </div>
           <div class="form-group">
             <label for="sell-notes">Notes</label>
-            <textarea id="sell-notes" v-model="sellForm.notes" rows="2"></textarea>
+            <textarea id="sell-notes" v-model="sellForm.notes" rows="2" placeholder="Why are you closing this position?"></textarea>
           </div>
+          <div v-if="error" class="error-msg">{{ error }}</div>
           <div class="form-actions">
-            <button type="button" @click="closeSellModal" class="btn-cancel">Cancel</button>
-            <button type="submit" class="btn-submit" :disabled="loading">{{ loading ? 'Recording...' : 'Record Sale' }}</button>
+            <button type="button" @click="closeSellModal" class="btn btn-ghost">Cancel</button>
+            <button type="submit" class="btn btn-primary" :disabled="loading">
+              {{ loading ? 'Recording…' : 'Record Sale' }}
+            </button>
           </div>
         </form>
-        <div v-if="error" class="error-msg">{{ error }}</div>
       </div>
     </div>
   </div>
@@ -165,11 +178,11 @@ const totalCostBasis = computed(() => {
 
 const getAccountName = (accountId) => {
   const account = accounts.value.find(a => a.id === accountId)
-  return account ? account.name : 'Unknown'
+  return account ? account.name : '—'
 }
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString()
+  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
 }
 
 const openAddModal = () => {
@@ -266,284 +279,51 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.holdings-view {
-  min-height: 100vh;
-  background: #f9f9f9;
-  padding: 2rem;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.btn-back {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-}
-
-.portfolio-summary {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.metrics {
+.metrics-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
-.metric {
+.metric-card {
+  background: var(--bg-1);
+  padding: 1.25rem 1.75rem;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
-.metric .label {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+.metric-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-1);
 }
 
-.metric .value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #007bff;
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
-.holdings-list {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.holdings-table {
-  margin-top: 1rem;
+.table-wrap {
   overflow-x: auto;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table th {
-  background: #f5f5f5;
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 2px solid #ddd;
-  font-weight: bold;
-}
-
-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-}
-
-table tr:hover {
-  background: #f9f9f9;
-}
-
-.empty {
-  text-align: center;
-  color: #666;
-  padding: 2rem;
-}
-
-.list-header {
+.row-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.list-header h2 {
-  margin: 0;
-}
-
-.btn-add {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-add:hover {
-  background: #218838;
-}
-
-.btn-action {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 3px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  margin-right: 0.25rem;
-}
-
-.btn-action:hover {
-  background: #0056b3;
-}
-
-.btn-action.delete {
-  background: #dc3545;
-}
-
-.btn-action.delete:hover {
-  background: #c82333;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.3rem;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-}
-
-.close-btn:hover {
-  color: #333;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
+  gap: 0.4rem;
   justify-content: flex-end;
-  margin-top: 1.5rem;
 }
 
-.btn-cancel,
-.btn-submit {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-cancel {
-  background: #e9ecef;
-  color: #333;
-}
-
-.btn-cancel:hover {
-  background: #dee2e6;
-}
-
-.btn-submit {
-  background: #007bff;
-  color: white;
-}
-
-.btn-submit:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.btn-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error-msg {
-  color: #dc3545;
-  padding: 1rem;
-  background: #f8d7da;
-  border-radius: 4px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
+@media (max-width: 768px) {
+  .metrics-row { grid-template-columns: 1fr; }
 }
 </style>

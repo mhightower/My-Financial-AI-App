@@ -1,56 +1,63 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content">
+    <div class="modal">
       <div class="modal-header">
         <h2>User Management</h2>
         <button @click="closeModal" class="close-btn">✕</button>
       </div>
 
       <div class="modal-body">
-        <!-- Existing Users List -->
-        <div class="section" v-if="users.length > 0">
-          <h3>Switch User</h3>
+        <!-- Existing Users -->
+        <div v-if="users.length > 0" class="section">
+          <div class="section-label">Switch User</div>
           <div class="users-list">
             <div
               v-for="user in users"
               :key="user.id"
-              class="user-card"
+              class="user-row"
               :class="{ active: currentUser?.id === user.id }"
             >
-              <div class="user-avatar" :style="{ backgroundColor: user.avatar_color || '#667eea' }"></div>
-              <div class="user-info">
-                <p class="user-name">{{ user.name }}</p>
+              <div
+                class="user-avatar"
+                :style="{ backgroundColor: user.avatar_color || '#D99D38' }"
+              >
+                {{ user.name.charAt(0).toUpperCase() }}
               </div>
-              <div class="user-actions">
+              <span class="user-row-name">{{ user.name }}</span>
+              <div class="user-row-actions">
+                <span v-if="currentUser?.id === user.id" class="active-badge">Active</span>
                 <button
-                  v-if="currentUser?.id !== user.id"
+                  v-else
                   @click="switchUser(user)"
-                  class="btn-switch"
+                  class="btn btn-ghost btn-sm"
                 >
                   Switch
                 </button>
                 <button
                   @click="deleteUserConfirm(user.id)"
-                  class="btn-delete"
+                  class="btn btn-danger btn-sm"
                 >
-                  Delete
+                  ✕
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Create New User Form -->
-        <div class="section create-user">
-          <h3>Create New User</h3>
-          <form @submit.prevent="createNewUser">
+        <!-- Divider -->
+        <div class="divider"></div>
+
+        <!-- Create New User -->
+        <div class="section">
+          <div class="section-label">Create New User</div>
+          <form @submit.prevent="createNewUser" class="create-form">
             <div class="form-group">
-              <label for="userName">User Name</label>
+              <label for="userName">Name *</label>
               <input
                 id="userName"
                 v-model="newUserName"
                 type="text"
-                placeholder="Enter your name"
+                placeholder="Your name"
                 required
               />
             </div>
@@ -62,22 +69,21 @@
                   v-for="color in AVATAR_COLORS"
                   :key="color"
                   type="button"
-                  class="color-btn"
+                  class="color-swatch"
                   :style="{ backgroundColor: color }"
                   :class="{ selected: newUserColor === color }"
                   @click="newUserColor = color"
-                  :title="color"
                 ></button>
               </div>
             </div>
 
-            <button type="submit" class="btn-create" :disabled="loading">
-              {{ loading ? 'Creating...' : 'Create User' }}
+            <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="loading">
+              {{ loading ? 'Creating…' : 'Create User' }}
             </button>
           </form>
         </div>
 
-        <div v-if="error" class="error-message">{{ error }}</div>
+        <div v-if="error" class="error-msg">{{ error }}</div>
       </div>
     </div>
   </div>
@@ -88,12 +94,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 
 const AVATAR_COLORS = [
-  '#667eea',  // Purple
-  '#48bb78',  // Green
-  '#ed8936',  // Orange
-  '#f56565',  // Red
-  '#4299e1',  // Blue
-  '#9f7aea',  // Pink
+  '#D99D38',
+  '#1DB87A',
+  '#4299e1',
+  '#9f7aea',
+  '#E04545',
+  '#ed8936',
 ]
 
 const userStore = useUserStore()
@@ -123,18 +129,16 @@ const loadUsers = async () => {
   error.value = null
   await userStore.fetchUsers()
   users.value = userStore.users
-  currentUser.value = userStore.currentUser
   loading.value = false
 }
 
 const switchUser = (user) => {
   userStore.setCurrentUser(user)
-  currentUser.value = user
 }
 
 const createNewUser = async () => {
   if (!newUserName.value.trim()) {
-    error.value = 'User name is required'
+    error.value = 'Name is required'
     return
   }
 
@@ -159,7 +163,7 @@ const createNewUser = async () => {
 }
 
 const deleteUserConfirm = (userId) => {
-  if (confirm('Are you sure you want to delete this user and all their data?')) {
+  if (confirm('Delete this user and all their data?')) {
     deleteUser(userId)
   }
 }
@@ -172,7 +176,6 @@ const deleteUser = async (userId) => {
     await userStore.deleteUser(userId)
     users.value = users.value.filter(u => u.id !== userId)
     if (currentUser.value?.id === userId) {
-      currentUser.value = null
       userStore.logout()
     }
   } catch (err) {
@@ -182,15 +185,10 @@ const deleteUser = async (userId) => {
   loading.value = false
 }
 
-defineExpose({
-  openModal,
-  closeModal,
-  isOpen
-})
+defineExpose({ openModal, closeModal, isOpen })
 
 onMounted(() => {
   loadUsers()
-  // Auto-open modal if no current user on first load
   if (!currentUser.value) {
     isOpen.value = true
   }
@@ -198,236 +196,114 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  color: #333;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
 .section {
-  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
-.section h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  color: #333;
-  font-weight: 600;
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-1);
 }
 
 .users-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.4rem;
 }
 
-.user-card {
+.user-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border: 2px solid #eee;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: border-color 0.2s;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  transition: border-color 0.12s;
 }
 
-.user-card:hover {
-  border-color: #667eea;
-}
-
-.user-card.active {
-  border-color: #667eea;
-  background: #f5f5ff;
+.user-row.active {
+  border-color: var(--amber);
+  background: var(--amber-glow);
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--bg-0);
   flex-shrink: 0;
 }
 
-.user-info {
+.user-row-name {
   flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-0);
 }
 
-.user-name {
-  margin: 0;
-  font-weight: 500;
-  color: #333;
-}
-
-.user-actions {
+.user-row-actions {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.btn-switch,
-.btn-delete {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 0.2s;
+.active-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: 0.2rem 0.5rem;
+  border-radius: 2rem;
+  background: var(--amber-dim);
 }
 
-.btn-switch {
-  background: #667eea;
-  color: white;
+.divider {
+  height: 1px;
+  background: var(--border);
 }
 
-.btn-switch:hover {
-  background: #5568d3;
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.btn-delete {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.btn-delete:hover {
-  background: #e0e0e0;
-}
-
-.create-user {
-  border-top: 1px solid #eee;
-  padding-top: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
+/* Color palette */
 .color-palette {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.color-btn {
-  width: 40px;
-  height: 40px;
+.color-swatch {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.12s;
+  outline: none;
 }
 
-.color-btn:hover {
-  border-color: #333;
+.color-swatch:hover {
+  transform: scale(1.15);
+  border-color: var(--text-0);
 }
 
-.color-btn.selected {
-  border-color: #333;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
-}
-
-.btn-create {
-  width: 100%;
-  padding: 0.75rem;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-create:hover:not(:disabled) {
-  background: #5568d3;
-}
-
-.btn-create:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error-message {
-  background: #fee;
-  color: #c33;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
+.color-swatch.selected {
+  border-color: var(--text-0);
+  box-shadow: 0 0 0 3px var(--bg-2), 0 0 0 5px var(--text-0);
 }
 </style>

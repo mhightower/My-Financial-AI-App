@@ -1,22 +1,29 @@
 <template>
-  <div class="accounts-view">
-    <div class="container">
-      <button @click="$router.back()" class="btn-back">← Back</button>
-      <h1>Brokerage Accounts</h1>
-
-      <div v-if="!currentUser" class="no-user">
-        <p>Please select a user to manage accounts.</p>
+  <div class="view">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Accounts</h1>
+        <p class="page-subtitle">Brokerage account management</p>
       </div>
+      <button v-if="currentUser" @click="openCreateForm" class="btn btn-primary">+ Add Account</button>
+    </div>
 
-      <div v-else>
-        <button @click="openCreateForm" class="btn-primary">+ Add Account</button>
+    <div v-if="!currentUser" class="panel empty-state">
+      <p>Please select a user to manage accounts.</p>
+    </div>
 
-        <div v-if="showCreateForm || showEditForm" class="create-form">
-          <h2>{{ showEditForm ? 'Edit Account' : 'Create New Account' }}</h2>
-          <form @submit.prevent="saveAccount">
+    <template v-else>
+      <!-- Inline create/edit form -->
+      <div v-if="showCreateForm || showEditForm" class="panel" style="margin-bottom: 1.5rem;">
+        <div class="panel-header">
+          <span class="panel-title">{{ showEditForm ? 'Edit Account' : 'New Account' }}</span>
+          <button @click="closeFormMode" class="close-btn">✕</button>
+        </div>
+        <form @submit.prevent="saveAccount" class="form-body">
+          <div class="form-row">
             <div class="form-group">
               <label>Account Name *</label>
-              <input v-model="formData.name" type="text" required>
+              <input v-model="formData.name" type="text" placeholder="e.g. My Fidelity Taxable" required>
             </div>
             <div class="form-group">
               <label>Account Type *</label>
@@ -29,30 +36,39 @@
             </div>
             <div class="form-group">
               <label>Broker</label>
-              <input v-model="formData.broker_name" type="text">
-            </div>
-            <button type="submit" class="btn-submit" :disabled="loading">{{ loading ? 'Saving...' : 'Save' }}</button>
-            <button type="button" @click="closeFormMode" class="btn-cancel">Cancel</button>
-          </form>
-          <div v-if="error" class="error-msg">{{ error }}</div>
-        </div>
-
-        <div class="accounts-grid" v-if="accounts.length > 0">
-          <div v-for="account in accounts" :key="account.id" class="account-card">
-            <h3>{{ account.name }}</h3>
-            <p class="type">{{ account.account_type }}</p>
-            <p v-if="account.broker_name" class="broker">{{ account.broker_name }}</p>
-            <div class="card-actions">
-              <button @click="openEditForm(account)" class="btn-edit">Edit</button>
-              <button @click="deleteAccountConfirm(account.id)" class="btn-delete">Delete</button>
+              <input v-model="formData.broker_name" type="text" placeholder="e.g. Fidelity">
             </div>
           </div>
-        </div>
-        <div v-else class="empty-state">
-          <p>No accounts yet. Create your first brokerage account!</p>
+          <div v-if="error" class="error-msg">{{ error }}</div>
+          <div class="form-actions">
+            <button type="button" @click="closeFormMode" class="btn btn-ghost">Cancel</button>
+            <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? 'Saving…' : 'Save' }}</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Accounts grid -->
+      <div v-if="accounts.length > 0" class="accounts-grid">
+        <div v-for="account in accounts" :key="account.id" class="account-card">
+          <div class="account-card-top">
+            <div>
+              <div class="account-name">{{ account.name }}</div>
+              <div class="account-broker" v-if="account.broker_name">{{ account.broker_name }}</div>
+            </div>
+            <span class="account-type-badge">{{ account.account_type }}</span>
+          </div>
+          <div class="account-card-actions">
+            <button @click="openEditForm(account)" class="btn btn-ghost btn-sm">Edit</button>
+            <button @click="deleteAccountConfirm(account.id)" class="btn btn-danger btn-sm">Delete</button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <div v-else class="panel empty-state">
+        <p>No accounts yet.</p>
+        <p style="margin-top:0.5rem; font-size:0.8rem;">Add a brokerage account to track holdings by account type.</p>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -137,172 +153,72 @@ const deleteAccountConfirm = (id) => {
 </script>
 
 <style scoped>
-.accounts-view {
-  min-height: 100vh;
-  background: #f9f9f9;
-  padding: 2rem;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.btn-back {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-}
-
-.btn-primary {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-bottom: 2rem;
-}
-
-.btn-primary:hover {
-  background: #218838;
-}
-
-.create-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #333;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.btn-submit {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 0.5rem;
-}
-
-.btn-submit:hover {
-  background: #0056b3;
-}
-
-.btn-cancel {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-cancel:hover {
-  background: #5a6268;
+.form-body {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
 }
 
 .accounts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .account-card {
-  background: white;
+  background: var(--bg-1);
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: background 0.12s;
 }
 
-.account-card h3 {
-  margin-top: 0;
-  color: #333;
+.account-card:hover { background: var(--bg-2); }
+
+.account-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
-.type {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0.5rem 0;
+.account-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-0);
 }
 
-.broker {
-  color: #007bff;
-  margin: 0.5rem 0;
+.account-broker {
+  font-size: 0.8rem;
+  color: var(--text-1);
+  margin-top: 0.25rem;
 }
 
-.card-actions {
+.account-type-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--amber);
+  background: var(--amber-dim);
+  padding: 0.2rem 0.55rem;
+  border-radius: 2rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.account-card-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 1rem;
 }
 
-.btn-edit,
-.btn-delete {
-  flex: 1;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.btn-edit {
-  background: #007bff;
-}
-
-.btn-edit:hover {
-  background: #0056b3;
-}
-
-.btn-delete {
-  background: #dc3545;
-}
-
-.btn-delete:hover {
-  background: #c82333;
-}
-
-.error-msg {
-  color: #dc3545;
-  padding: 1rem;
-  background: #f8d7da;
-  border-radius: 4px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-.empty-state {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  text-align: center;
-  color: #666;
+@media (max-width: 768px) {
+  .accounts-grid { grid-template-columns: 1fr; }
 }
 </style>

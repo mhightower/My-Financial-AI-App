@@ -1,53 +1,78 @@
 <template>
-  <div class="dashboard">
-    <div class="dashboard-container">
-      <div class="header-section">
-        <h1>Dashboard</h1>
-        <div class="user-info" v-if="currentUser">
-          <span>Active User: {{ currentUser.name }}</span>
-          <button @click="logoutUser" class="btn-logout">Logout</button>
-        </div>
-        <div class="no-user" v-else>
-          <p>No user selected. Create or switch users.</p>
-        </div>
+  <div class="view">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle" v-if="currentUser">Signed in as {{ currentUser.name }}</p>
+        <p class="page-subtitle" v-else>No user selected</p>
       </div>
-
-      <div class="portfolio-summary" v-if="currentUser">
-        <h2>Portfolio Summary</h2>
-        <div class="summary-cards">
-          <div class="card">
-            <h3>Watchlists</h3>
-            <p class="number">{{ watchlists.length }}</p>
-          </div>
-          <div class="card">
-            <h3>Holdings</h3>
-            <p class="number">{{ holdings.length }}</p>
-          </div>
-          <div class="card">
-            <h3>Accounts</h3>
-            <p class="number">{{ accounts.length }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="quick-actions">
-        <h2>Quick Actions</h2>
-        <button @click="() => $router.push('/watchlists')" class="btn">View Watchlists</button>
-        <button @click="() => $router.push('/holdings')" class="btn">View Holdings</button>
-        <button @click="() => $router.push('/accounts')" class="btn">Manage Accounts</button>
-      </div>
-
-      <div class="recent-watchlists" v-if="watchlists.length > 0">
-        <h2>Recent Watchlists</h2>
-        <ul>
-          <li v-for="wl in watchlists.slice(0, 5)" :key="wl.id">
-            <router-link :to="`/watchlist/${wl.id}`">
-              {{ wl.name }} ({{ wl.stocks?.length || 0 }} stocks)
-            </router-link>
-          </li>
-        </ul>
-      </div>
+      <button v-if="currentUser" @click="logoutUser" class="btn btn-ghost btn-sm">Sign out</button>
     </div>
+
+    <div v-if="!currentUser" class="panel empty-state">
+      <p>No user selected. Click your profile in the sidebar to get started.</p>
+    </div>
+
+    <template v-else>
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <span class="stat-label">Watchlists</span>
+          <span class="stat-value mono-amber">{{ watchlists.length }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Holdings</span>
+          <span class="stat-value mono-amber">{{ holdings.length }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Accounts</span>
+          <span class="stat-value mono-amber">{{ accounts.length }}</span>
+        </div>
+      </div>
+
+      <!-- Content grid -->
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Recent Watchlists</span>
+            <router-link to="/watchlists" class="panel-action">View all →</router-link>
+          </div>
+          <div v-if="watchlists.length > 0">
+            <router-link
+              v-for="wl in watchlists.slice(0, 6)"
+              :key="wl.id"
+              :to="`/watchlist/${wl.id}`"
+              class="wl-row"
+            >
+              <span class="wl-name">{{ wl.name }}</span>
+              <span class="wl-count mono-muted">{{ wl.stocks?.length || 0 }}/15</span>
+            </router-link>
+          </div>
+          <div v-else class="empty-state">No watchlists yet. Create one to get started.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Navigate</span>
+          </div>
+          <router-link to="/watchlists" class="quick-link">
+            <span class="quick-icon">◉</span>
+            <span>Watchlists</span>
+            <span class="quick-arrow">→</span>
+          </router-link>
+          <router-link to="/holdings" class="quick-link">
+            <span class="quick-icon">△</span>
+            <span>Holdings</span>
+            <span class="quick-arrow">→</span>
+          </router-link>
+          <router-link to="/accounts" class="quick-link">
+            <span class="quick-icon">▣</span>
+            <span>Accounts</span>
+            <span class="quick-arrow">→</span>
+          </router-link>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -69,7 +94,6 @@ const holdings = computed(() => holdingsStore.holdings)
 const accounts = computed(() => holdingsStore.accounts)
 
 onMounted(async () => {
-  // Note: currentUser is already loaded by App.vue
   if (currentUser.value) {
     await watchlistsStore.fetchWatchlists(currentUser.value.id)
     await holdingsStore.fetchHoldings(currentUser.value.id)
@@ -84,134 +108,108 @@ const logoutUser = () => {
 </script>
 
 <style scoped>
-.dashboard {
-  min-height: 100vh;
-  background: #f9f9f9;
+/* Stats */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
-.dashboard-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+.stat-card {
+  background: var(--bg-1);
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
-.header-section {
+.stat-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-1);
+}
+
+.stat-value {
+  font-size: 2.75rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Grid */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+}
+
+/* Watchlist rows */
+.wl-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  transition: background 0.12s;
 }
 
-.header-section h1 {
-  margin: 0;
-  color: #333;
+.wl-row:last-child { border-bottom: none; }
+.wl-row:hover { background: var(--bg-2); }
+
+.wl-name {
+  font-size: 0.875rem;
+  color: var(--text-0);
+  font-weight: 600;
 }
 
-.user-info {
+.wl-count { font-size: 0.78rem; }
+
+/* Quick links */
+.quick-link {
   display: flex;
-  gap: 1rem;
   align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text-1);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.12s;
 }
 
-.user-info span {
-  color: #666;
+.quick-link:last-child { border-bottom: none; }
+
+.quick-link:hover {
+  background: var(--bg-2);
+  color: var(--text-0);
 }
 
-.no-user {
-  color: #999;
-  font-style: italic;
-}
-
-.btn, .btn-logout {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn {
-  background: #007bff;
-  color: white;
-  margin-right: 0.5rem;
-}
-
-.btn:hover {
-  background: #0056b3;
-}
-
-.btn-logout {
-  background: #dc3545;
-  color: white;
-}
-
-.btn-logout:hover {
-  background: #c82333;
-}
-
-.portfolio-summary,
-.quick-actions,
-.recent-watchlists {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.card {
-  background: #f5f5f5;
-  padding: 1.5rem;
-  border-radius: 4px;
+.quick-icon {
+  font-size: 0.8rem;
+  color: var(--amber);
+  width: 14px;
   text-align: center;
 }
 
-.card h3 {
-  margin: 0 0 0.5rem 0;
-  color: #666;
-  font-size: 0.95rem;
+.quick-arrow {
+  margin-left: auto;
+  color: var(--text-2);
+  font-size: 0.8rem;
 }
 
-.card .number {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #007bff;
-}
+.quick-link:hover .quick-arrow { color: var(--amber); }
 
-.recent-watchlists ul {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0 0 0;
-}
-
-.recent-watchlists li {
-  padding: 0.75rem;
-  border-bottom: 1px solid #eee;
-}
-
-.recent-watchlists li:last-child {
-  border-bottom: none;
-}
-
-.recent-watchlists a {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.recent-watchlists a:hover {
-  text-decoration: underline;
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .dash-grid { grid-template-columns: 1fr; }
 }
 </style>
