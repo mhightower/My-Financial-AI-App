@@ -113,53 +113,6 @@ html, body {
 ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-2); }
 
-/* ── Shared Buttons ── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  font-family: var(--font-ui);
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-decoration: none;
-  white-space: nowrap;
-  line-height: 1;
-}
-
-.btn-primary {
-  background: var(--amber);
-  color: var(--bg-0);
-  border-color: var(--amber);
-}
-.btn-primary:hover:not(:disabled) { background: var(--amber-hi); border-color: var(--amber-hi); }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-1);
-  border-color: var(--border-hi);
-}
-.btn-ghost:hover:not(:disabled) { color: var(--text-0); border-color: var(--text-2); background: var(--bg-2); }
-
-.btn-danger {
-  background: transparent;
-  color: var(--red);
-  border-color: transparent;
-}
-.btn-danger:hover:not(:disabled) { background: var(--red-dim); border-color: rgba(224, 69, 69, 0.3); }
-
-.btn-sm {
-  padding: 0.35rem 0.7rem;
-  font-size: 0.75rem;
-}
-
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
 /* ── Shared Forms ── */
 .form-group {
   display: flex;
