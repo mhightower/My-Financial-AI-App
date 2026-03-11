@@ -1,107 +1,135 @@
 <template>
-  <div class="watchlist-detail">
-    <div class="container">
-      <button @click="$router.back()" class="btn-back">← Back</button>
-      <h1 v-if="watchlist">{{ watchlist.name }}</h1>
-      <p v-if="watchlist && watchlist.description" class="description">{{ watchlist.description }}</p>
-
-      <div v-if="watchlist && watchlist.stocks" class="stocks-list">
-        <div class="list-header">
-          <h2>Stocks ({{ watchlist.stocks.length }}/15)</h2>
-          <button @click="openAddModal" class="btn-add" :disabled="watchlist.stocks.length >= 15">
-            + Add Stock
-          </button>
-        </div>
-        <div v-if="watchlist.stocks.length > 0" class="stocks-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Ticker</th>
-                <th>Buy Reasons</th>
-                <th>Sell Conditions</th>
-                <th>Buy Price</th>
-                <th>Sell Price</th>
-                <th>Stop Loss</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="stock in watchlist.stocks" :key="stock.id">
-                <td><strong>{{ stock.ticker }}</strong></td>
-                <td>{{ stock.buy_reasons || '-' }}</td>
-                <td>{{ stock.sell_conditions || '-' }}</td>
-                <td>{{ stock.buy_price ? `$${stock.buy_price}` : '-' }}</td>
-                <td>{{ stock.sell_price ? `$${stock.sell_price}` : '-' }}</td>
-                <td>{{ stock.stop_loss_pct ? `${(stock.stop_loss_pct * 100).toFixed(0)}%` : '-' }}</td>
-                <td>
-                  <button @click="removeStockConfirm(stock.id)" class="btn-remove">Remove</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty">
-          <p>No stocks in this watchlist yet. Click "Add Stock" to get started!</p>
-        </div>
+  <div class="view">
+    <div v-if="watchlist" class="page-header">
+      <div>
+        <button @click="$router.back()" class="back-btn">← Watchlists</button>
+        <h1 class="page-title">{{ watchlist.name }}</h1>
+        <p v-if="watchlist.description" class="page-subtitle">{{ watchlist.description }}</p>
       </div>
+      <button
+        @click="openAddModal"
+        class="btn btn-primary"
+        :disabled="watchlist.stocks?.length >= 15"
+        :title="watchlist.stocks?.length >= 15 ? 'Watchlist full (15 max)' : ''"
+      >
+        + Add Stock
+      </button>
+    </div>
 
-      <div v-else class="loading">
-        <p>Loading...</p>
+    <div v-if="!watchlist" class="panel empty-state">
+      <p>Loading watchlist…</p>
+    </div>
+
+    <div v-else-if="!watchlist.stocks || watchlist.stocks.length === 0" class="panel empty-state">
+      <p>No stocks in this watchlist yet.</p>
+      <p style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-2);">
+        Add a stock with your investment thesis — why you'd buy, when you'd sell.
+      </p>
+    </div>
+
+    <div v-else class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Stocks {{ watchlist.stocks.length }}/15</span>
+      </div>
+      <div class="stocks-list">
+        <div v-for="stock in watchlist.stocks" :key="stock.id" class="stock-card">
+          <div class="stock-top">
+            <span class="stock-ticker mono-amber">{{ stock.ticker }}</span>
+            <div class="stock-triggers">
+              <div class="trigger-group" v-if="stock.buy_price">
+                <span class="trigger-label">BUY</span>
+                <span class="trigger-val mono-green">${{ stock.buy_price }}</span>
+              </div>
+              <div class="trigger-group" v-if="stock.sell_price">
+                <span class="trigger-label">SELL</span>
+                <span class="trigger-val mono-red">${{ stock.sell_price }}</span>
+              </div>
+              <div class="trigger-group" v-if="stock.stop_loss_pct">
+                <span class="trigger-label">STOP</span>
+                <span class="trigger-val mono-muted">{{ (stock.stop_loss_pct * 100).toFixed(0) }}%</span>
+              </div>
+            </div>
+            <button @click="removeStockConfirm(stock.id)" class="icon-btn danger" title="Remove">✕</button>
+          </div>
+          <div class="thesis-row" v-if="stock.buy_reasons || stock.sell_conditions">
+            <div class="thesis-block" v-if="stock.buy_reasons">
+              <span class="thesis-label buy-label">▲ Buy reasons</span>
+              <p class="thesis-text">{{ stock.buy_reasons }}</p>
+            </div>
+            <div class="thesis-block" v-if="stock.sell_conditions">
+              <span class="thesis-label sell-label">▼ Sell conditions</span>
+              <p class="thesis-text">{{ stock.sell_conditions }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Add Stock Modal -->
     <div v-if="showAddModal" class="modal-overlay" @click.self="closeAddModal">
-      <div class="modal">
+      <div class="modal modal-wide">
         <div class="modal-header">
           <h2>Add Stock to Watchlist</h2>
           <button @click="closeAddModal" class="close-btn">✕</button>
         </div>
         <form @submit.prevent="addStock" class="modal-body">
-          <div class="form-group">
+          <div class="form-group" style="position: relative;">
             <label for="ticker">Ticker *</label>
             <input
               id="ticker"
               v-model="addForm.ticker"
               type="text"
-              placeholder="Search ticker..."
+              placeholder="Search ticker…"
               @input="searchStocks"
               required
             />
             <div v-if="searchResults.length > 0" class="search-dropdown">
-              <div v-for="result in searchResults" :key="result.ticker" class="search-result" @click="selectStock(result)">
-                <strong>{{ result.ticker }}</strong> - {{ result.name }}
+              <div
+                v-for="result in searchResults"
+                :key="result.ticker"
+                class="search-result"
+                @click="selectStock(result)"
+              >
+                <span class="mono-amber" style="font-size:0.82rem; font-weight:600;">{{ result.ticker }}</span>
+                <span style="color:var(--text-1); font-size:0.8rem; margin-left:0.5rem;">{{ result.name }}</span>
               </div>
             </div>
           </div>
-          <div class="form-group">
-            <label for="buy-reasons">Buy Reasons</label>
-            <textarea id="buy-reasons" v-model="addForm.buy_reasons" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="sell-conditions">Sell Conditions</label>
-            <textarea id="sell-conditions" v-model="addForm.sell_conditions" rows="3"></textarea>
-          </div>
-          <div class="form-row">
+
+          <div class="thesis-inputs">
             <div class="form-group">
-              <label for="buy-price">Buy Price Target ($)</label>
-              <input id="buy-price" v-model.number="addForm.buy_price" type="number" step="0.01" />
+              <label for="buy-reasons">Buy Reasons</label>
+              <textarea id="buy-reasons" v-model="addForm.buy_reasons" rows="3" placeholder="Why would you buy? What's the thesis?"></textarea>
             </div>
             <div class="form-group">
-              <label for="sell-price">Sell Price Target ($)</label>
-              <input id="sell-price" v-model.number="addForm.sell_price" type="number" step="0.01" />
+              <label for="sell-conditions">Sell Conditions</label>
+              <textarea id="sell-conditions" v-model="addForm.sell_conditions" rows="3" placeholder="When would you sell? What invalidates the thesis?"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="buy-price">Buy Target ($)</label>
+              <input id="buy-price" v-model.number="addForm.buy_price" type="number" step="0.01" placeholder="0.00" />
+            </div>
+            <div class="form-group">
+              <label for="sell-price">Sell Target ($)</label>
+              <input id="sell-price" v-model.number="addForm.sell_price" type="number" step="0.01" placeholder="0.00" />
             </div>
             <div class="form-group">
               <label for="stop-loss">Stop Loss (%)</label>
-              <input id="stop-loss" v-model.number="addForm.stop_loss_pct" type="number" step="0.1" min="0" max="100" />
+              <input id="stop-loss" v-model.number="addForm.stop_loss_pct" type="number" step="0.1" min="0" max="100" placeholder="15" />
             </div>
           </div>
+
+          <div v-if="error" class="error-msg">{{ error }}</div>
           <div class="form-actions">
-            <button type="button" @click="closeAddModal" class="btn-cancel">Cancel</button>
-            <button type="submit" class="btn-submit" :disabled="loading">{{ loading ? 'Adding...' : 'Add Stock' }}</button>
+            <button type="button" @click="closeAddModal" class="btn btn-ghost">Cancel</button>
+            <button type="submit" class="btn btn-primary" :disabled="loading">
+              {{ loading ? 'Adding…' : 'Add Stock' }}
+            </button>
           </div>
         </form>
-        <div v-if="error" class="error-msg">{{ error }}</div>
       </div>
     </div>
   </div>
@@ -228,294 +256,140 @@ const removeStock = async (stockId) => {
 </script>
 
 <style scoped>
-.watchlist-detail {
-  min-height: 100vh;
-  background: #f9f9f9;
-  padding: 2rem;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.btn-back {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-}
-
-.btn-back:hover {
-  background: #5a6268;
-}
-
-.description {
-  color: #666;
-  font-size: 1.1rem;
-  margin: 1rem 0 2rem 0;
-}
-
-.stocks-list {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.stocks-table {
-  margin-top: 1rem;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table th {
-  background: #f5f5f5;
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 2px solid #ddd;
-  font-weight: bold;
-}
-
-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-}
-
-table tr:hover {
-  background: #f9f9f9;
-}
-
-.empty {
-  text-align: center;
-  color: #666;
-  padding: 2rem;
-}
-
-.loading {
-  text-align: center;
-  color: #666;
-  padding: 2rem;
-}
-
-.list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.list-header h2 {
-  margin: 0;
-}
-
-.btn-add {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.btn-add:hover:not(:disabled) {
-  background: #218838;
-}
-
-.btn-add:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.btn-remove {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 3px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.btn-remove:hover {
-  background: #c82333;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.3rem;
-  color: #333;
-}
-
-.close-btn {
+.back-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
-  color: #999;
   padding: 0;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
+  transition: color 0.12s;
+}
+.back-btn:hover { color: var(--amber); }
+
+/* Stock cards */
+.stocks-list {
+  display: flex;
+  flex-direction: column;
 }
 
-.close-btn:hover {
-  color: #333;
+.stock-card {
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
 }
 
-.modal-body {
-  padding: 1.5rem;
+.stock-card:last-child { border-bottom: none; }
+.stock-card:hover { background: var(--bg-2); }
+
+.stock-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-.form-group {
-  margin-bottom: 1rem;
-  position: relative;
+.stock-ticker {
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  min-width: 60px;
 }
 
-.form-row {
+.stock-triggers {
+  display: flex;
+  gap: 1.25rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.trigger-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.trigger-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-2);
+}
+
+.trigger-val {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Thesis */
+.thesis-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
+.thesis-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 1rem;
-  box-sizing: border-box;
+.thesis-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+.buy-label { color: var(--green); }
+.sell-label { color: var(--red); }
+
+.thesis-text {
+  font-size: 0.82rem;
+  color: var(--text-1);
+  line-height: 1.5;
 }
 
+/* Search dropdown */
 .search-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-2);
+  border: 1px solid var(--border-hi);
   border-top: none;
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 var(--radius) var(--radius);
   max-height: 200px;
   overflow-y: auto;
   z-index: 10;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .search-result {
-  padding: 0.75rem;
+  padding: 0.65rem 0.75rem;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
 }
 
-.search-result:hover {
-  background: #f5f5f5;
-}
+.search-result:last-child { border-bottom: none; }
+.search-result:hover { background: var(--bg-3); }
 
-.search-result:last-child {
-  border-bottom: none;
-}
-
-.form-actions {
-  display: flex;
+/* Thesis inputs grid */
+.thesis-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
 }
 
-.btn-cancel,
-.btn-submit {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-cancel {
-  background: #e9ecef;
-  color: #333;
-}
-
-.btn-cancel:hover {
-  background: #dee2e6;
-}
-
-.btn-submit {
-  background: #007bff;
-  color: white;
-}
-
-.btn-submit:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.btn-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error-msg {
-  color: #dc3545;
-  padding: 1rem;
-  background: #f8d7da;
-  border-radius: 4px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
+@media (max-width: 640px) {
+  .thesis-row { grid-template-columns: 1fr; }
+  .thesis-inputs { grid-template-columns: 1fr; }
+  .form-row-3 { grid-template-columns: 1fr; }
 }
 </style>
