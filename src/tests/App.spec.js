@@ -19,11 +19,11 @@ describe('App.vue', () => {
     expect(wrapper.exists()).toBe(true)
   })
 
-  it('renders header element', () => {
+  it('renders sidebar navigation', () => {
     const wrapper = mount(App, {
       global: { plugins: [createPinia(), createTestRouter()] }
     })
-    expect(wrapper.find('header').exists()).toBe(true)
+    expect(wrapper.find('aside').exists()).toBe(true)
   })
 
   it('renders main element', () => {
