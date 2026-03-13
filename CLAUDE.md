@@ -47,7 +47,7 @@ backend/app/
   pyproject.toml   - Python deps (uv)
 ```
 
-## Data Model
+1## Data Model
 
 ```text
 User

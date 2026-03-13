@@ -32,3 +32,6 @@ dist-ssr
 Thumbs.db
 .mcp.json
 backend/financial.db
+
+# Coverage
+coverage/
