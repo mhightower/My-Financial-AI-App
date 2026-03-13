@@ -17,7 +17,7 @@
       <div v-if="showCreateForm || showEditForm" class="panel" style="margin-bottom: 1.5rem;">
         <div class="panel-header">
           <span class="panel-title">{{ showEditForm ? 'Edit Account' : 'New Account' }}</span>
-          <button @click="closeFormMode" class="close-btn">✕</button>
+          <button @click="closeFormMode" class="close-btn" aria-label="Close form">✕</button>
         </div>
         <form @submit.prevent="saveAccount" class="form-body">
           <div class="form-row">

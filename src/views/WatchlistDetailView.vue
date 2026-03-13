@@ -2,7 +2,7 @@
   <div class="view">
     <div v-if="watchlist" class="page-header">
       <div>
-        <button @click="$router.back()" class="back-btn">← Watchlists</button>
+        <button @click="$router.back()" class="back-btn" aria-label="Go back to watchlists">← Watchlists</button>
         <h1 class="page-title">{{ watchlist.name }}</h1>
         <p v-if="watchlist.description" class="page-subtitle">{{ watchlist.description }}</p>
       </div>
@@ -49,7 +49,7 @@
                 <span class="trigger-val mono-muted">{{ (stock.stop_loss_pct * 100).toFixed(0) }}%</span>
               </div>
             </div>
-            <button @click="removeStockConfirm(stock.id)" class="icon-btn danger" title="Remove">✕</button>
+            <button @click="removeStockConfirm(stock.id)" class="icon-btn danger" title="Remove" aria-label="Remove stock from watchlist">✕</button>
           </div>
           <div class="thesis-row" v-if="stock.buy_reasons || stock.sell_conditions">
             <div class="thesis-block" v-if="stock.buy_reasons">
@@ -66,11 +66,11 @@
     </div>
 
     <!-- Add Stock Modal -->
-    <div v-if="showAddModal" class="modal-overlay" @click.self="closeAddModal">
+    <div v-if="showAddModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-stock-modal-title" @click.self="closeAddModal" @keydown.escape="closeAddModal">
       <div class="modal modal-wide">
         <div class="modal-header">
-          <h2>Add Stock to Watchlist</h2>
-          <button @click="closeAddModal" class="close-btn">✕</button>
+          <h2 id="add-stock-modal-title">Add Stock to Watchlist</h2>
+          <button @click="closeAddModal" class="close-btn" aria-label="Close">✕</button>
         </div>
         <form @submit.prevent="addStock" class="modal-body">
           <div class="form-group" style="position: relative;">
@@ -83,11 +83,12 @@
               @input="searchStocks"
               required
             />
-            <div v-if="searchResults.length > 0" class="search-dropdown">
+            <div v-if="searchResults.length > 0" class="search-dropdown" role="listbox" aria-label="Stock search results">
               <div
                 v-for="result in searchResults"
                 :key="result.ticker"
                 class="search-result"
+                role="option"
                 @click="selectStock(result)"
               >
                 <span class="mono-amber" style="font-size:0.82rem; font-weight:600;">{{ result.ticker }}</span>

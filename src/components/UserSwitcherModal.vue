@@ -1,9 +1,9 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click.self="closeModal">
+  <div v-if="isOpen" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="user-modal-title" @click.self="closeModal" @keydown.escape="closeModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>User Management</h2>
-        <button @click="closeModal" class="close-btn">✕</button>
+        <h2 id="user-modal-title">User Management</h2>
+        <button @click="closeModal" class="close-btn" aria-label="Close user management">✕</button>
       </div>
 
       <div class="modal-body">
@@ -20,6 +20,7 @@
               <div
                 class="user-avatar"
                 :style="{ backgroundColor: user.avatar_color || '#D99D38' }"
+                aria-hidden="true"
               >
                 {{ user.name.charAt(0).toUpperCase() }}
               </div>
@@ -36,6 +37,7 @@
                 <button
                   @click="deleteUserConfirm(user.id)"
                   class="btn btn-danger btn-sm"
+                  :aria-label="`Delete user ${user.name}`"
                 >
                   ✕
                 </button>
@@ -72,6 +74,8 @@
                   class="color-swatch"
                   :style="{ backgroundColor: color }"
                   :class="{ selected: newUserColor === color }"
+                  :aria-label="`Select ${COLOR_NAMES[color]} avatar color`"
+                  :aria-pressed="newUserColor === color"
                   @click="newUserColor = color"
                 ></button>
               </div>
@@ -101,6 +105,15 @@ const AVATAR_COLORS = [
   '#E04545',
   '#ed8936',
 ]
+
+const COLOR_NAMES = {
+  '#D99D38': 'Amber',
+  '#1DB87A': 'Green',
+  '#4299e1': 'Blue',
+  '#9f7aea': 'Purple',
+  '#E04545': 'Red',
+  '#ed8936': 'Orange',
+}
 
 const userStore = useUserStore()
 

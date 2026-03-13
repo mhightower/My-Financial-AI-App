@@ -56,19 +56,19 @@
             <span class="panel-title">Navigate</span>
           </div>
           <router-link to="/watchlists" class="quick-link">
-            <span class="quick-icon">◉</span>
+            <span class="quick-icon" aria-hidden="true">◉</span>
             <span>Watchlists</span>
-            <span class="quick-arrow">→</span>
+            <span class="quick-arrow" aria-hidden="true">→</span>
           </router-link>
           <router-link to="/holdings" class="quick-link">
-            <span class="quick-icon">△</span>
+            <span class="quick-icon" aria-hidden="true">△</span>
             <span>Holdings</span>
-            <span class="quick-arrow">→</span>
+            <span class="quick-arrow" aria-hidden="true">→</span>
           </router-link>
           <router-link to="/accounts" class="quick-link">
-            <span class="quick-icon">▣</span>
+            <span class="quick-icon" aria-hidden="true">▣</span>
             <span>Accounts</span>
-            <span class="quick-arrow">→</span>
+            <span class="quick-arrow" aria-hidden="true">→</span>
           </router-link>
         </div>
       </div>

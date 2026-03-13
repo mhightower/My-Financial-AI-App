@@ -58,7 +58,7 @@
                 <td>
                   <div class="row-actions">
                     <button @click="closePositionModal(holding)" class="btn btn-ghost btn-sm">Close</button>
-                    <button @click="deleteHoldingConfirm(holding.id)" class="btn btn-danger btn-sm">✕</button>
+                    <button @click="deleteHoldingConfirm(holding.id)" class="btn btn-danger btn-sm" aria-label="Delete holding">✕</button>
                   </div>
                 </td>
               </tr>
@@ -74,11 +74,11 @@
     </template>
 
     <!-- Add Holding Modal -->
-    <div v-if="showAddModal" class="modal-overlay" @click.self="closeAddModal">
+    <div v-if="showAddModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-holding-modal-title" @click.self="closeAddModal" @keydown.escape="closeAddModal">
       <div class="modal">
         <div class="modal-header">
-          <h2>Add Holding</h2>
-          <button @click="closeAddModal" class="close-btn">✕</button>
+          <h2 id="add-holding-modal-title">Add Holding</h2>
+          <button @click="closeAddModal" class="close-btn" aria-label="Close">✕</button>
         </div>
         <form @submit.prevent="addHolding" class="modal-body">
           <div class="form-group">
@@ -118,13 +118,13 @@
     </div>
 
     <!-- Close Position (Sell) Modal -->
-    <div v-if="showSellModal" class="modal-overlay" @click.self="closeSellModal">
+    <div v-if="showSellModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="close-position-modal-title" @click.self="closeSellModal" @keydown.escape="closeSellModal">
       <div class="modal">
         <div class="modal-header">
-          <h2>Close Position — {{ sellForm.ticker }}</h2>
-          <button @click="closeSellModal" class="close-btn">✕</button>
+          <h2 id="close-position-modal-title">Close Position — {{ sellForm.ticker }}</h2>
+          <button @click="closeSellModal" class="close-btn" aria-label="Close">✕</button>
         </div>
-        <form @submit.prevent="closePosion" class="modal-body">
+        <form @submit.prevent="closePosition" class="modal-body">
           <div class="form-row">
             <div class="form-group">
               <label for="shares">Shares Sold *</label>
@@ -237,7 +237,7 @@ const closeSellModal = () => {
   error.value = null
 }
 
-const closePosion = async () => {
+const closePosition = async () => {
   if (sellForm.value.shares_sold <= 0 || sellForm.value.price_received <= 0) {
     error.value = 'Please enter valid share count and price'
     return

@@ -22,8 +22,8 @@
         <div class="wl-card-header">
           <span class="wl-card-name">{{ wl.name }}</span>
           <div class="wl-card-actions">
-            <button @click.stop="editWatchlist(wl)" class="icon-btn" title="Edit">✎</button>
-            <button @click.stop="deleteWatchlistConfirm(wl.id)" class="icon-btn danger" title="Delete">✕</button>
+            <button @click.stop="editWatchlist(wl)" class="icon-btn" title="Edit" aria-label="Edit watchlist">✎</button>
+            <button @click.stop="deleteWatchlistConfirm(wl.id)" class="icon-btn danger" title="Delete" aria-label="Delete watchlist">✕</button>
           </div>
         </div>
         <p v-if="wl.description" class="wl-card-desc">{{ wl.description }}</p>
@@ -35,11 +35,11 @@
     </div>
 
     <!-- Create/Edit Modal -->
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+    <div v-if="showModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="wl-modal-title" @click.self="closeModal" @keydown.escape="closeModal">
       <div class="modal">
         <div class="modal-header">
-          <h2>{{ editingId ? 'Edit Watchlist' : 'New Watchlist' }}</h2>
-          <button @click="closeModal" class="close-btn">✕</button>
+          <h2 id="wl-modal-title">{{ editingId ? 'Edit Watchlist' : 'New Watchlist' }}</h2>
+          <button @click="closeModal" class="close-btn" aria-label="Close">✕</button>
         </div>
         <form @submit.prevent="saveWatchlist" class="modal-body">
           <div class="form-group">

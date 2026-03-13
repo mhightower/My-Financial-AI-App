@@ -1,35 +1,35 @@
 <template>
   <div id="app">
-    <aside class="sidebar">
-      <div class="brand" @click="$router.push('/')">
-        <span class="brand-mark">MF</span>
+    <aside class="sidebar" role="complementary" aria-label="Application sidebar">
+      <div class="brand" role="button" tabindex="0" aria-label="MyFinancial — Return to dashboard" @click="$router.push('/')" @keydown.enter="$router.push('/')">
+        <span class="brand-mark" aria-hidden="true">MF</span>
         <span class="brand-text">MyFinancial</span>
       </div>
 
-      <nav class="sidebar-nav">
+      <nav class="sidebar-nav" aria-label="Main navigation">
         <router-link to="/" active-class="" exact-active-class="nav-active">
-          <span class="nav-icon">◈</span>
+          <span class="nav-icon" aria-hidden="true">◈</span>
           <span class="nav-label">Dashboard</span>
         </router-link>
         <router-link to="/watchlists" active-class="nav-active">
-          <span class="nav-icon">◉</span>
+          <span class="nav-icon" aria-hidden="true">◉</span>
           <span class="nav-label">Watchlists</span>
         </router-link>
         <router-link to="/holdings" active-class="nav-active">
-          <span class="nav-icon">△</span>
+          <span class="nav-icon" aria-hidden="true">△</span>
           <span class="nav-label">Holdings</span>
         </router-link>
         <router-link to="/accounts" active-class="nav-active">
-          <span class="nav-icon">▣</span>
+          <span class="nav-icon" aria-hidden="true">▣</span>
           <span class="nav-label">Accounts</span>
         </router-link>
       </nav>
 
-      <div class="sidebar-user" @click="openUserModal">
-        <div v-if="currentUser" class="avatar-circle" :style="{ backgroundColor: currentUser.avatar_color || '#D99D38' }">
+      <div class="sidebar-user" role="button" tabindex="0" :aria-label="currentUser ? `${currentUser.name} — Open user settings` : 'Select a user'" @click="openUserModal" @keydown.enter="openUserModal">
+        <div v-if="currentUser" class="avatar-circle" aria-hidden="true" :style="{ backgroundColor: currentUser.avatar_color || '#D99D38' }">
           {{ currentUser.name.charAt(0).toUpperCase() }}
         </div>
-        <div v-else class="avatar-circle ghost">?</div>
+        <div v-else class="avatar-circle ghost" aria-hidden="true">?</div>
         <span class="user-display-name">{{ currentUser?.name || 'Select User' }}</span>
       </div>
     </aside>
@@ -106,6 +106,17 @@ html, body {
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Global focus indicator for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -231,6 +242,7 @@ html, body {
   border-radius: var(--radius-sm);
 }
 .close-btn:hover { color: var(--text-0); background: var(--bg-2); }
+.close-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 
 .error-msg {
   color: var(--red);
