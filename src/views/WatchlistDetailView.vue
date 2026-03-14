@@ -313,10 +313,15 @@ const searchStocks = async () => {
       searchError.value = null
     } catch (err) {
       searchResults.value = []
-      const msg = err.response?.data?.detail || ''
-      searchError.value = msg.includes('rate limit')
-        ? 'Search unavailable (API limit reached) — type ticker directly'
-        : null
+      const status = err.response?.status
+      const detail = err.response?.data?.detail || ''
+      if (status === 429 || detail.toLowerCase().includes('rate limit')) {
+        searchError.value = 'Search unavailable (API limit reached) — type ticker directly'
+      } else if (status >= 500 || status === 502) {
+        searchError.value = 'Search unavailable — type ticker directly'
+      } else {
+        searchError.value = null
+      }
     }
   }, 300)
 }

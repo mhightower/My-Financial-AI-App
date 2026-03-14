@@ -34,6 +34,11 @@ async def search_stocks(q: str, limit: int = 10):
     try:
         results = await alpha_vantage.search_symbol(q, limit)
         return results
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=str(e)
+        )
     except httpx.HTTPStatusError as e:
         logger.error("Alpha Vantage HTTP error on search: %s %s", type(e).__name__, e)
         raise HTTPException(
