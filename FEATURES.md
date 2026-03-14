@@ -6,6 +6,10 @@
 
 A personal stock & ETF tracker that enforces investment discipline through documented decision-making. Users define investment theses (buy reasons) and exit criteria (sell reasons) before purchasing, helping reduce emotional decisions and improve long-term returns. Track multiple watchlists, manage investment triggers, and maintain a clear audit trail of your investment logic.
 
+### Project Architecture
+
+- [ ] Add a DB migration tool
+
 ### Stock Data API
 
 - [X] Install Alpha Vantage MCP
