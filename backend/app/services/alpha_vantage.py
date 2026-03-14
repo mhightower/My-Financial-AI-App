@@ -59,6 +59,9 @@ async def search_symbol(keywords: str, limit: int = 10) -> List[StockSearchResul
         response.raise_for_status()
         data = response.json()
 
+    if "Information" in data or "Note" in data:
+        raise ValueError("Alpha Vantage rate limit reached — type the ticker directly")
+
     results = []
     if "bestMatches" in data:
         for match in data["bestMatches"][:limit]:

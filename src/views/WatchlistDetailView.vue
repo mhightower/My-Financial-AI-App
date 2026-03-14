@@ -126,6 +126,7 @@
               @input="searchStocks"
               required
             />
+            <div v-if="searchError" class="search-hint">{{ searchError }}</div>
             <div v-if="searchResults.length > 0" class="search-dropdown" role="listbox" aria-label="Stock search results">
               <div
                 v-for="result in searchResults"
@@ -204,6 +205,7 @@ const showAddModal = ref(false)
 const loading = ref(false)
 const error = ref(null)
 const searchResults = ref([])
+const searchError = ref(null)
 const searchTimeout = ref(null)
 
 const { trapRef: addModalTrapRef } = useFocusTrap(showAddModal)
@@ -285,6 +287,7 @@ const openAddModal = () => {
     stop_loss_pct: null
   }
   searchResults.value = []
+  searchError.value = null
   showAddModal.value = true
   error.value = null
 }
@@ -299,6 +302,7 @@ const searchStocks = async () => {
 
   if (addForm.value.ticker.length < 1) {
     searchResults.value = []
+    searchError.value = null
     return
   }
 
@@ -306,8 +310,13 @@ const searchStocks = async () => {
     try {
       const response = await api.stocks.search(addForm.value.ticker, 5)
       searchResults.value = response.data
+      searchError.value = null
     } catch (err) {
       searchResults.value = []
+      const msg = err.response?.data?.detail || ''
+      searchError.value = msg.includes('rate limit')
+        ? 'Search unavailable (API limit reached) — type ticker directly'
+        : null
     }
   }, 300)
 }
@@ -462,6 +471,22 @@ const removeStock = async (stockId) => {
   font-size: 0.82rem;
   color: var(--text-1);
   line-height: 1.5;
+}
+
+/* Search hint (rate limit message) */
+.search-hint {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  font-size: 0.75rem;
+  color: var(--amber);
+  background: var(--bg-2);
+  border: 1px solid var(--border-hi);
+  border-top: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0 0 var(--radius) var(--radius);
+  z-index: 10;
 }
 
 /* Search dropdown */
