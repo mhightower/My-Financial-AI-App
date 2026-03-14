@@ -18,9 +18,15 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'lcov', 'html'],
       include: ['src/**/*.{js,vue}'],
-      exclude: ['src/main.js']
+      exclude: ['src/main.js'],
+      thresholds: {
+        lines: 65,
+        functions: 50,
+        branches: 60,
+        statements: 65
+      }
     }
   }
 })
