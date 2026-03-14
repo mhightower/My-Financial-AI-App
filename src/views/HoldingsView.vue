@@ -74,7 +74,7 @@
     </template>
 
     <!-- Add Holding Modal -->
-    <div v-if="showAddModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-holding-modal-title" @click.self="closeAddModal" @keydown.escape="closeAddModal">
+    <div v-if="showAddModal" ref="addModalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-holding-modal-title" @click.self="closeAddModal" @keydown.escape="closeAddModal">
       <div class="modal">
         <div class="modal-header">
           <h2 id="add-holding-modal-title">Add Holding</h2>
@@ -118,7 +118,7 @@
     </div>
 
     <!-- Close Position (Sell) Modal -->
-    <div v-if="showSellModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="close-position-modal-title" @click.self="closeSellModal" @keydown.escape="closeSellModal">
+    <div v-if="showSellModal" ref="sellModalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="close-position-modal-title" @click.self="closeSellModal" @keydown.escape="closeSellModal">
       <div class="modal">
         <div class="modal-header">
           <h2 id="close-position-modal-title">Close Position — {{ sellForm.ticker }}</h2>
@@ -156,6 +156,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useHoldingsStore } from '../stores/holdings'
+import { useFocusTrap } from '../composables/useFocusTrap'
 
 const userStore = useUserStore()
 const holdingsStore = useHoldingsStore()
@@ -168,6 +169,9 @@ const showAddModal = ref(false)
 const showSellModal = ref(false)
 const loading = ref(false)
 const error = ref(null)
+
+const { trapRef: addModalTrapRef } = useFocusTrap(showAddModal)
+const { trapRef: sellModalTrapRef } = useFocusTrap(showSellModal)
 
 const addForm = ref({ ticker: '', account_id: '', quantity: 0, entry_price: 0, notes: '' })
 const sellForm = ref({ ticker: '', holding_id: null, account_id: null, shares_sold: 0, price_received: 0, notes: '' })

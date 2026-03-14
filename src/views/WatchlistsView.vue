@@ -35,7 +35,7 @@
     </div>
 
     <!-- Create/Edit Modal -->
-    <div v-if="showModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="wl-modal-title" @click.self="closeModal" @keydown.escape="closeModal">
+    <div v-if="showModal" ref="modalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="wl-modal-title" @click.self="closeModal" @keydown.escape="closeModal">
       <div class="modal">
         <div class="modal-header">
           <h2 id="wl-modal-title">{{ editingId ? 'Edit Watchlist' : 'New Watchlist' }}</h2>
@@ -67,6 +67,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useWatchlistsStore } from '../stores/watchlists'
+import { useFocusTrap } from '../composables/useFocusTrap'
 
 const userStore = useUserStore()
 const watchlistsStore = useWatchlistsStore()
@@ -78,6 +79,8 @@ const showModal = ref(false)
 const loading = ref(false)
 const error = ref(null)
 const editingId = ref(null)
+
+const { trapRef: modalTrapRef } = useFocusTrap(showModal)
 const formData = ref({ name: '', description: '' })
 
 onMounted(async () => {

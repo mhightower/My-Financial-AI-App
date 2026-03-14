@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="user-modal-title" @click.self="closeModal" @keydown.escape="closeModal">
+  <div v-if="isOpen" ref="modalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="user-modal-title" @click.self="closeModal" @keydown.escape="closeModal">
     <div class="modal">
       <div class="modal-header">
         <h2 id="user-modal-title">User Management</h2>
@@ -96,6 +96,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
+import { useFocusTrap } from '../composables/useFocusTrap'
 
 const AVATAR_COLORS = [
   '#D99D38',
@@ -124,6 +125,8 @@ const currentUser = computed(() => userStore.currentUser)
 const users = ref([])
 const newUserName = ref('')
 const newUserColor = ref(AVATAR_COLORS[0])
+
+const { trapRef: modalTrapRef } = useFocusTrap(isOpen)
 
 const openModal = () => {
   isOpen.value = true

@@ -66,7 +66,7 @@
     </div>
 
     <!-- Add Stock Modal -->
-    <div v-if="showAddModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-stock-modal-title" @click.self="closeAddModal" @keydown.escape="closeAddModal">
+    <div v-if="showAddModal" ref="addModalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-stock-modal-title" @click.self="closeAddModal" @keydown.escape="closeAddModal">
       <div class="modal modal-wide">
         <div class="modal-header">
           <h2 id="add-stock-modal-title">Add Stock to Watchlist</h2>
@@ -140,6 +140,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWatchlistsStore } from '../stores/watchlists'
+import { useFocusTrap } from '../composables/useFocusTrap'
 import * as api from '../services/api'
 
 const route = useRoute()
@@ -147,23 +148,15 @@ const watchlistsStore = useWatchlistsStore()
 const watchlist = computed(() => watchlistsStore.currentWatchlist)
 
 const showAddModal = ref(false)
-const showEditModal = ref(false)
-const editingStock = ref(null)
 const loading = ref(false)
 const error = ref(null)
 const searchResults = ref([])
 const searchTimeout = ref(null)
 
+const { trapRef: addModalTrapRef } = useFocusTrap(showAddModal)
+
 const addForm = ref({
   ticker: '',
-  buy_reasons: '',
-  sell_conditions: '',
-  buy_price: null,
-  sell_price: null,
-  stop_loss_pct: null
-})
-
-const editForm = ref({
   buy_reasons: '',
   sell_conditions: '',
   buy_price: null,
@@ -246,47 +239,6 @@ const addStock = async () => {
     closeAddModal()
   } catch (err) {
     error.value = 'Failed to add stock: ' + (err.response?.data?.detail || err.message)
-  } finally {
-    loading.value = false
-  }
-}
-
-const openEditModal = (stock) => {
-  editingStock.value = stock
-  editForm.value = {
-    buy_reasons: stock.buy_reasons || '',
-    sell_conditions: stock.sell_conditions || '',
-    buy_price: stock.buy_price ?? null,
-    sell_price: stock.sell_price ?? null,
-    stop_loss_pct: stock.stop_loss_pct != null ? +(stock.stop_loss_pct * 100).toFixed(2) : null
-  }
-  error.value = null
-  showEditModal.value = true
-}
-
-const closeEditModal = () => {
-  showEditModal.value = false
-  editingStock.value = null
-  error.value = null
-}
-
-const updateStock = async () => {
-  loading.value = true
-  error.value = null
-
-  try {
-    const stockData = {
-      buy_reasons: editForm.value.buy_reasons || null,
-      sell_conditions: editForm.value.sell_conditions || null,
-      buy_price: editForm.value.buy_price,
-      sell_price: editForm.value.sell_price,
-      stop_loss_pct: editForm.value.stop_loss_pct != null ? editForm.value.stop_loss_pct / 100 : null
-    }
-
-    await watchlistsStore.updateStockInWatchlist(watchlist.value.id, editingStock.value.id, stockData)
-    closeEditModal()
-  } catch (err) {
-    error.value = 'Failed to update stock: ' + (err.response?.data?.detail || err.message)
   } finally {
     loading.value = false
   }

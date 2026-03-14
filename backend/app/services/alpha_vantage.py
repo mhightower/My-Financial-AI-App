@@ -1,6 +1,6 @@
 import httpx
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
 from ..schemas import StockQuoteResponse, StockDetailResponse, StockSearchResult, StockHistoryPoint
 
@@ -27,7 +27,7 @@ def _get_cached(key: str, ttl: int) -> Optional[Any]:
     if key not in _cache:
         return None
     timestamp, data = _cache[key]
-    if datetime.utcnow() - timestamp > timedelta(seconds=ttl):
+    if datetime.now(timezone.utc) - timestamp > timedelta(seconds=ttl):
         del _cache[key]
         return None
     return data
@@ -35,7 +35,7 @@ def _get_cached(key: str, ttl: int) -> Optional[Any]:
 
 def _set_cached(key: str, data: Any) -> None:
     """Store value in cache"""
-    _cache[key] = (datetime.utcnow(), data)
+    _cache[key] = (datetime.now(timezone.utc), data)
 
 
 async def search_symbol(keywords: str, limit: int = 10) -> List[StockSearchResult]:
@@ -105,7 +105,7 @@ async def get_quote(symbol: str) -> StockQuoteResponse:
         current_price=float(quote_data.get("05. price", 0)),
         daily_change_pct=float(quote_data.get("10. change percent", "0").rstrip("%")),
         volume=int(quote_data.get("06. volume", 0)),
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
     _set_cached(cache_key, result)
@@ -147,7 +147,7 @@ async def get_overview(symbol: str) -> StockDetailResponse:
         dividend_yield=float(overview.get("DividendYield", 0)) if overview.get("DividendYield") != "None" else None,
         week_52_high=float(overview.get("52WeekHigh", 0)) if overview.get("52WeekHigh") != "None" else None,
         week_52_low=float(overview.get("52WeekLow", 0)) if overview.get("52WeekLow") != "None" else None,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
     _set_cached(cache_key, result)

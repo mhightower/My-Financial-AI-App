@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 
@@ -15,13 +15,12 @@ class UserUpdate(BaseModel):
 
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     avatar_color: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class UserDetailResponse(UserResponse):
@@ -44,15 +43,14 @@ class BrokerageAccountUpdate(BaseModel):
 
 
 class BrokerageAccountResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     name: str
     account_type: str
     broker_name: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # Holding Schemas
@@ -72,6 +70,8 @@ class HoldingUpdate(BaseModel):
 
 
 class HoldingResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     account_id: int
@@ -80,9 +80,6 @@ class HoldingResponse(BaseModel):
     entry_price: float
     entry_date: datetime
     notes: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 
 # Stock In Watchlist Schemas
@@ -104,6 +101,8 @@ class StockInWatchlistUpdate(BaseModel):
 
 
 class StockInWatchlistResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     watchlist_id: int
     ticker: str
@@ -113,9 +112,6 @@ class StockInWatchlistResponse(BaseModel):
     sell_price: Optional[float] = None
     stop_loss_pct: Optional[float] = None
     added_date: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # Watchlist Schemas
@@ -130,14 +126,13 @@ class WatchlistUpdate(BaseModel):
 
 
 class WatchlistResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     description: Optional[str] = None
     owner_user_id: int
     created_date: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class WatchlistDetailResponse(WatchlistResponse):
@@ -203,6 +198,8 @@ class SellTransactionUpdate(BaseModel):
 
 
 class SellTransactionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     account_id: int
@@ -212,9 +209,6 @@ class SellTransactionResponse(BaseModel):
     sell_date: datetime
     notes: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # Update forward references
