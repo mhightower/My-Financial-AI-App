@@ -79,10 +79,9 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 - [ ] Enforce max of 15 stocks per watchlist
 - [ ] Sort stocks by price, % change, or date added
 - [ ] View watchlist overview (total value, top mover)
-- [ ] Fix Delete icon
+- [X] Fix Delete icon
 
 ### Holdings & Portfolio
-
 - [ ] Record buy order (ticker, shares, price paid, date, account)
 - [ ] Record sell order (ticker, shares, price received, date, account)
 - [ ] Display unrealized gain/loss per position

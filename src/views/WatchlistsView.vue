@@ -188,21 +188,6 @@ const deleteWatchlist = async (id) => {
   flex-shrink: 0;
 }
 
-.icon-btn {
-  background: none;
-  border: none;
-  color: var(--text-1);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0.2rem 0.35rem;
-  border-radius: var(--radius-sm);
-  transition: all 0.12s;
-  line-height: 1;
-}
-
-.icon-btn:hover { color: var(--text-0); background: var(--bg-3); }
-.icon-btn.danger:hover { color: var(--red); background: var(--red-dim); }
-
 .wl-card-desc {
   font-size: 0.82rem;
   color: var(--text-1);
