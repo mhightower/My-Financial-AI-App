@@ -11,8 +11,8 @@ load_dotenv(env_file)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from .database import engine, Base
-from .routers import users, watchlists, holdings, stocks, sell_transactions
+from app.database import engine, Base
+from app.routers import users, watchlists, holdings, stocks, sell_transactions
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)

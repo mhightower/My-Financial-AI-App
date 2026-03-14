@@ -1,6 +1,8 @@
+import os
 from logging.config import fileConfig
 
 from app.database import Base
+from app import models  # noqa: F401 - register models with Base.metadata
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
@@ -39,7 +41,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -58,8 +60,12 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    configuration = config.get_section(config.config_ini_section, {})
+    db_url = os.getenv("DATABASE_URL")
+    if db_url:
+        configuration["sqlalchemy.url"] = db_url
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
