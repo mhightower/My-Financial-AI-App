@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.database import engine, Base
-from app.routers import users, watchlists, holdings, stocks, sell_transactions
+from app.routers import users, watchlists, holdings, stocks, sell_transactions, ai
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -38,6 +38,7 @@ app.include_router(watchlists.router)
 app.include_router(holdings.router)
 app.include_router(stocks.router)
 app.include_router(sell_transactions.router)
+app.include_router(ai.router)
 
 
 class HealthResponse(BaseModel):

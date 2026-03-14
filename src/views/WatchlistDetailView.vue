@@ -49,6 +49,13 @@
                 <span class="trigger-val mono-muted">{{ (stock.stop_loss_pct * 100).toFixed(0) }}%</span>
               </div>
             </div>
+            <button
+              v-if="stock.buy_reasons || stock.sell_conditions"
+              @click="analyzeThesis(stock)"
+              class="btn btn-ghost btn-sm ai-btn"
+              :disabled="analyzingId === stock.id"
+              title="Analyze thesis with AI"
+            >{{ analyzingId === stock.id ? 'Analyzing…' : '✦ Analyze' }}</button>
             <button @click="removeStockConfirm(stock.id)" class="icon-btn danger" title="Remove" aria-label="Remove stock from watchlist">✕</button>
           </div>
           <div class="thesis-row" v-if="stock.buy_reasons || stock.sell_conditions">
@@ -59,6 +66,42 @@
             <div class="thesis-block" v-if="stock.sell_conditions">
               <span class="thesis-label sell-label">▼ Sell conditions</span>
               <p class="thesis-text">{{ stock.sell_conditions }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Analysis Modal -->
+    <div v-if="showAnalysisModal" ref="analysisModalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="analysis-modal-title" @click.self="showAnalysisModal = false" @keydown.escape="showAnalysisModal = false">
+      <div class="modal modal-wide">
+        <div class="modal-header">
+          <h2 id="analysis-modal-title">Thesis Analysis — <span class="mono-amber">{{ analysisStock?.ticker }}</span></h2>
+          <button @click="showAnalysisModal = false" class="close-btn" aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body" v-if="analysisResult">
+          <div class="analysis-score-row">
+            <div class="score-badge" :class="scoreClass">{{ analysisResult.quality_score }}<span style="font-size:1rem; font-weight:400;">/10</span></div>
+            <span class="conviction-badge">{{ analysisResult.conviction_level }} conviction</span>
+          </div>
+          <div class="analysis-grid">
+            <div class="analysis-section">
+              <span class="analysis-label strengths-label">Strengths</span>
+              <ul>
+                <li v-for="(s, i) in analysisResult.strengths" :key="i" class="strength-item">{{ s }}</li>
+              </ul>
+            </div>
+            <div class="analysis-section">
+              <span class="analysis-label blind-spots-label">Blind Spots</span>
+              <ul>
+                <li v-for="(b, i) in analysisResult.blind_spots" :key="i" class="blind-spot-item">{{ b }}</li>
+              </ul>
+            </div>
+            <div class="analysis-section">
+              <span class="analysis-label suggestions-label">Suggestions</span>
+              <ul>
+                <li v-for="(s, i) in analysisResult.suggestions" :key="i" class="suggestion-item">{{ s }}</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -108,6 +151,16 @@
             </div>
           </div>
 
+          <div class="ai-draft-row">
+            <button
+              type="button"
+              @click="generateThesisDraft"
+              class="btn btn-ghost btn-sm ai-btn"
+              :disabled="!addForm.ticker || generatingDraft"
+            >{{ generatingDraft ? 'Generating…' : '✦ Generate with AI' }}</button>
+            <span v-if="draftError" class="draft-error">{{ draftError }}</span>
+          </div>
+
           <div class="form-row-3">
             <div class="form-group">
               <label for="buy-price">Buy Target ($)</label>
@@ -154,6 +207,59 @@ const searchResults = ref([])
 const searchTimeout = ref(null)
 
 const { trapRef: addModalTrapRef } = useFocusTrap(showAddModal)
+
+// AI Thesis Analyzer
+const analyzingId = ref(null)
+const showAnalysisModal = ref(false)
+const analysisResult = ref(null)
+const analysisStock = ref(null)
+const analysisError = ref(null)
+const { trapRef: analysisModalTrapRef } = useFocusTrap(showAnalysisModal)
+
+const scoreClass = computed(() => {
+  const s = analysisResult.value?.quality_score ?? 0
+  if (s >= 7) return 'score-good'
+  if (s >= 5) return 'score-neutral'
+  return 'score-poor'
+})
+
+const analyzeThesis = async (stock) => {
+  analyzingId.value = stock.id
+  analysisError.value = null
+  try {
+    const response = await api.ai.analyzeThesis({
+      ticker: stock.ticker,
+      buy_reasons: stock.buy_reasons || '',
+      sell_conditions: stock.sell_conditions || ''
+    })
+    analysisResult.value = response.data
+    analysisStock.value = stock
+    showAnalysisModal.value = true
+  } catch (err) {
+    analysisError.value = 'Analysis failed. Try again shortly.'
+  } finally {
+    analyzingId.value = null
+  }
+}
+
+// AI Draft Thesis Generator
+const generatingDraft = ref(false)
+const draftError = ref(null)
+
+const generateThesisDraft = async () => {
+  if (!addForm.value.ticker) return
+  generatingDraft.value = true
+  draftError.value = null
+  try {
+    const response = await api.ai.draftThesis(addForm.value.ticker.toUpperCase())
+    addForm.value.buy_reasons = response.data.buy_reasons
+    addForm.value.sell_conditions = response.data.sell_conditions
+  } catch (err) {
+    draftError.value = 'Could not generate draft. Enter a valid ticker and try again.'
+  } finally {
+    generatingDraft.value = false
+  }
+}
 
 const addForm = ref({
   ticker: '',
@@ -391,9 +497,102 @@ const removeStock = async (stockId) => {
   gap: 1rem;
 }
 
+/* AI button */
+.ai-btn {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--amber);
+  border-color: var(--amber-dim);
+}
+.ai-btn:hover:not(:disabled) { background: rgba(217, 157, 56, 0.08); }
+
+/* AI draft row */
+.ai-draft-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: -0.25rem;
+}
+.draft-error { font-size: 0.78rem; color: var(--red); }
+
+/* Analysis modal */
+.analysis-score-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+.score-badge {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-good { color: var(--green); }
+.score-neutral { color: var(--amber); }
+.score-poor { color: var(--red); }
+
+.conviction-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-1);
+  border: 1px solid var(--border-hi);
+  padding: 0.3rem 0.7rem;
+  border-radius: 2rem;
+}
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.analysis-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.analysis-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.strengths-label { color: var(--green); }
+.blind-spots-label { color: var(--red); }
+.suggestions-label { color: var(--amber); }
+
+.analysis-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+}
+.analysis-section li {
+  font-size: 0.82rem;
+  color: var(--text-0);
+  line-height: 1.55;
+  padding-left: 0.85rem;
+  position: relative;
+}
+.analysis-section li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+.strength-item::before { color: var(--green); }
+.blind-spot-item::before { color: var(--red); }
+.suggestion-item::before { color: var(--amber); }
+
 @media (max-width: 640px) {
   .thesis-row { grid-template-columns: 1fr; }
   .thesis-inputs { grid-template-columns: 1fr; }
   .form-row-3 { grid-template-columns: 1fr; }
+  .analysis-grid { grid-template-columns: 1fr; }
 }
 </style>

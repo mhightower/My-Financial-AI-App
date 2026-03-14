@@ -27,6 +27,24 @@
           <span class="metric-label">Accounts</span>
           <span class="metric-value mono-muted">{{ accounts.length }}</span>
         </div>
+        <div class="metric-card">
+          <span class="metric-label">Current Value</span>
+          <span v-if="performanceLoading" class="metric-value mono-muted" style="font-size:1.1rem;">Loading…</span>
+          <span v-else-if="performance?.total_current_value != null" class="metric-value mono-amber">
+            ${{ performance.total_current_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+          </span>
+          <span v-else class="metric-value mono-muted">—</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Total Return</span>
+          <span v-if="performanceLoading" class="metric-value mono-muted" style="font-size:1.1rem;">Loading…</span>
+          <span v-else-if="performance?.total_unrealized_gain_loss != null"
+            class="metric-value"
+            :class="performance.total_unrealized_gain_loss >= 0 ? 'mono-green' : 'mono-red'">
+            {{ performance.total_unrealized_gain_loss >= 0 ? '+' : '' }}${{ performance.total_unrealized_gain_loss.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+          </span>
+          <span v-else class="metric-value mono-muted">—</span>
+        </div>
       </div>
 
       <!-- Holdings table -->
@@ -43,17 +61,46 @@
                 <th>Entry Price</th>
                 <th>Date</th>
                 <th>Cost Basis</th>
+                <th>Current Price</th>
+                <th>Current Value</th>
+                <th>Gain / Loss</th>
+                <th>Return %</th>
                 <th>Account</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="holding in holdings" :key="holding.id">
+              <tr v-for="holding in perfHoldings" :key="holding.id">
                 <td><span class="mono-amber" style="font-size:0.95rem; font-weight:600;">{{ holding.ticker }}</span></td>
                 <td><span class="mono">{{ holding.quantity }}</span></td>
                 <td><span class="mono">${{ holding.entry_price.toFixed(2) }}</span></td>
                 <td><span class="mono-muted" style="font-size:0.8rem;">{{ formatDate(holding.entry_date) }}</span></td>
                 <td><span class="mono-amber">${{ (holding.quantity * holding.entry_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span></td>
+                <td>
+                  <span v-if="performanceLoading" class="mono-muted" style="font-size:0.75rem;">…</span>
+                  <span v-else-if="holding.current_price != null" class="mono">${{ holding.current_price.toFixed(2) }}</span>
+                  <span v-else class="mono-muted">—</span>
+                </td>
+                <td>
+                  <span v-if="holding.current_value != null" class="mono">
+                    ${{ holding.current_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                  </span>
+                  <span v-else class="mono-muted">—</span>
+                </td>
+                <td>
+                  <span v-if="holding.unrealized_gain_loss != null"
+                    :class="holding.unrealized_gain_loss >= 0 ? 'mono-green' : 'mono-red'">
+                    {{ holding.unrealized_gain_loss >= 0 ? '+' : '' }}${{ holding.unrealized_gain_loss.toFixed(2) }}
+                  </span>
+                  <span v-else class="mono-muted">—</span>
+                </td>
+                <td>
+                  <span v-if="holding.return_pct != null"
+                    :class="holding.return_pct >= 0 ? 'mono-green' : 'mono-red'">
+                    {{ holding.return_pct >= 0 ? '+' : '' }}{{ holding.return_pct.toFixed(2) }}%
+                  </span>
+                  <span v-else class="mono-muted">—</span>
+                </td>
                 <td><span style="color:var(--text-1); font-size:0.82rem;">{{ getAccountName(holding.account_id) }}</span></td>
                 <td>
                   <div class="row-actions">
@@ -164,6 +211,11 @@ const holdingsStore = useHoldingsStore()
 const currentUser = computed(() => userStore.currentUser)
 const holdings = computed(() => holdingsStore.holdings)
 const accounts = computed(() => holdingsStore.accounts)
+const performance = computed(() => holdingsStore.performance)
+const performanceLoading = computed(() => holdingsStore.performanceLoading)
+
+// Use performance holdings when available, fall back to plain holdings
+const perfHoldings = computed(() => performance.value?.holdings ?? holdings.value)
 
 const showAddModal = ref(false)
 const showSellModal = ref(false)
@@ -278,6 +330,8 @@ onMounted(async () => {
   if (currentUser.value) {
     await holdingsStore.fetchHoldings(currentUser.value.id)
     await holdingsStore.fetchAccounts(currentUser.value.id)
+    // Non-blocking: load live prices after table renders
+    holdingsStore.fetchPerformance(currentUser.value.id)
   }
 })
 </script>
@@ -285,7 +339,7 @@ onMounted(async () => {
 <style scoped>
 .metrics-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
@@ -327,7 +381,10 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .metrics-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
   .metrics-row { grid-template-columns: 1fr; }
 }
 </style>

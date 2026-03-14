@@ -211,6 +211,57 @@ class SellTransactionResponse(BaseModel):
     created_at: datetime
 
 
+# Holdings Performance Schemas
+class HoldingPerformanceItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    account_id: int
+    ticker: str
+    quantity: float
+    entry_price: float
+    entry_date: datetime
+    notes: Optional[str] = None
+    current_price: Optional[float] = None
+    current_value: Optional[float] = None
+    unrealized_gain_loss: Optional[float] = None
+    return_pct: Optional[float] = None
+    price_error: Optional[str] = None
+
+
+class HoldingPerformanceResponse(BaseModel):
+    holdings: List[HoldingPerformanceItem]
+    total_cost_basis: float
+    total_current_value: Optional[float] = None
+    total_unrealized_gain_loss: Optional[float] = None
+    as_of: datetime
+
+
+# AI Schemas
+class AnalyzeThesisRequest(BaseModel):
+    ticker: str
+    buy_reasons: str
+    sell_conditions: str
+
+
+class AnalyzeThesisResponse(BaseModel):
+    quality_score: int
+    conviction_level: str
+    strengths: List[str]
+    blind_spots: List[str]
+    suggestions: List[str]
+
+
+class DraftThesisRequest(BaseModel):
+    ticker: str
+
+
+class DraftThesisResponse(BaseModel):
+    buy_reasons: str
+    sell_conditions: str
+
+
 # Update forward references
 UserDetailResponse.model_rebuild()
 WatchlistDetailResponse.model_rebuild()

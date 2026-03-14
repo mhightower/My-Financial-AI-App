@@ -6,8 +6,23 @@ export const useHoldingsStore = defineStore('holdings', () => {
   const holdings = ref([])
   const accounts = ref([])
   const sellTransactions = ref([])
+  const performance = ref(null)
+  const performanceLoading = ref(false)
   const loading = ref(false)
   const error = ref(null)
+
+  const fetchPerformance = async (userId) => {
+    performanceLoading.value = true
+    try {
+      const response = await api.holdings.getPerformance(userId)
+      performance.value = response.data
+      return response.data
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      performanceLoading.value = false
+    }
+  }
 
   const fetchHoldings = async (userId) => {
     loading.value = true
@@ -163,9 +178,12 @@ export const useHoldingsStore = defineStore('holdings', () => {
     holdings,
     accounts,
     sellTransactions,
+    performance,
+    performanceLoading,
     loading,
     error,
     fetchHoldings,
+    fetchPerformance,
     fetchAccounts,
     createHolding,
     createAccount,

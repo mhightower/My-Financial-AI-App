@@ -1,3 +1,5 @@
+import asyncio
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -10,7 +12,10 @@ from ..schemas import (
     HoldingCreate,
     HoldingUpdate,
     HoldingResponse,
+    HoldingPerformanceItem,
+    HoldingPerformanceResponse,
 )
+from ..services import alpha_vantage
 
 router = APIRouter(tags=["accounts and holdings"])
 
@@ -220,6 +225,72 @@ def delete_holding(holding_id: int, db: Session = Depends(get_db)):
     db.delete(holding)
     db.commit()
     return None
+
+
+@router.get("/api/v1/users/{user_id}/holdings-performance", response_model=HoldingPerformanceResponse)
+async def get_holdings_performance(user_id: int, db: Session = Depends(get_db)):
+    """Get holdings with live prices and computed P&L from Alpha Vantage"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+
+    holdings = db.query(Holding).filter(Holding.user_id == user_id).all()
+
+    if not holdings:
+        return HoldingPerformanceResponse(
+            holdings=[],
+            total_cost_basis=0.0,
+            as_of=datetime.now(timezone.utc)
+        )
+
+    # Fetch quotes for unique tickers concurrently
+    unique_tickers = list({h.ticker for h in holdings})
+    tasks = [alpha_vantage.get_quote(ticker) for ticker in unique_tickers]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    quote_map = {}
+    for ticker, result in zip(unique_tickers, results):
+        if isinstance(result, Exception):
+            quote_map[ticker] = None
+        else:
+            quote_map[ticker] = result.current_price
+
+    # Build performance items
+    performance_items = []
+    for h in holdings:
+        price = quote_map.get(h.ticker)
+        item_data = {
+            "id": h.id, "user_id": h.user_id, "account_id": h.account_id,
+            "ticker": h.ticker, "quantity": h.quantity, "entry_price": h.entry_price,
+            "entry_date": h.entry_date, "notes": h.notes,
+        }
+        if price is not None:
+            cost = h.quantity * h.entry_price
+            current_value = h.quantity * price
+            gain = current_value - cost
+            item_data.update({
+                "current_price": price,
+                "current_value": current_value,
+                "unrealized_gain_loss": gain,
+                "return_pct": (gain / cost * 100) if cost else None,
+                "price_error": None,
+            })
+        else:
+            item_data["price_error"] = "unavailable"
+        performance_items.append(HoldingPerformanceItem(**item_data))
+
+    # Aggregate totals only for holdings with valid prices
+    total_cost_basis = sum(h.quantity * h.entry_price for h in holdings)
+    valid_items = [i for i in performance_items if i.current_value is not None]
+    total_current_value = sum(i.current_value for i in valid_items) if valid_items else None
+    total_gain = sum(i.unrealized_gain_loss for i in valid_items) if valid_items else None
+
+    return HoldingPerformanceResponse(
+        holdings=performance_items,
+        total_cost_basis=total_cost_basis,
+        total_current_value=total_current_value,
+        total_unrealized_gain_loss=total_gain,
+        as_of=datetime.now(timezone.utc)
+    )
 
 
 @router.get("/api/v1/users/{user_id}/holdings", response_model=List[HoldingResponse])

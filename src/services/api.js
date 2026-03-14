@@ -43,6 +43,7 @@ export const accounts = {
 // Holdings endpoints
 export const holdings = {
   list: (userId) => api.get(`/users/${userId}/holdings`),
+  getPerformance: (userId) => api.get(`/users/${userId}/holdings-performance`),
   get: (id) => api.get(`/holdings/${id}`),
   create: (userId, data) => api.post(`/holdings?user_id=${userId}`, data),
   update: (id, data) => api.put(`/holdings/${id}`, data),
@@ -64,6 +65,12 @@ export const sellTransactions = {
   create: (userId, data) => api.post(`/sell-transactions?user_id=${userId}`, data),
   update: (id, data) => api.put(`/sell-transactions/${id}`, data),
   delete: (id) => api.delete(`/sell-transactions/${id}`)
+}
+
+// AI endpoints
+export const ai = {
+  analyzeThesis: (data) => api.post('/ai/analyze-thesis', data, { timeout: 30000 }),
+  draftThesis: (ticker) => api.post('/ai/draft-thesis', { ticker }, { timeout: 30000 })
 }
 
 export default api
