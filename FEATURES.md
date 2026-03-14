@@ -67,11 +67,11 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 
 ### Watchlists
 
-- [ ] Create watchlist with name and description
+- [X] Create watchlist with name and description
 - [ ] Edit watchlist name and description
 - [ ] Delete watchlist
-- [ ] Add stocks to watchlist
-- [ ] Remove stocks from watchlist
+- [X] Add stocks to watchlist
+- [X] Remove stocks from watchlist
 - [ ] Move stock between watchlists
 - [ ] Display stock price and daily % change inline
 - [ ] Show thesis indicator badge (thesis exists or not)
@@ -79,6 +79,7 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 - [ ] Enforce max of 15 stocks per watchlist
 - [ ] Sort stocks by price, % change, or date added
 - [ ] View watchlist overview (total value, top mover)
+- [ ] Fix Delete icon
 
 ### Holdings & Portfolio
 
