@@ -8,7 +8,7 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 
 ### Project Architecture
 
-- [ ] Add a DB migration tool
+- [X] Add a DB migration tool
 
 ### Stock Data API
 
