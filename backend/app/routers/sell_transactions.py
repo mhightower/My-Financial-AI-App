@@ -64,6 +64,7 @@ def get_sell_transaction(transaction_id: int, db: Session = Depends(get_db)):
 def update_sell_transaction(
     transaction_id: int,
     transaction_update: SellTransactionUpdate,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Update a sell transaction"""
@@ -72,6 +73,11 @@ def update_sell_transaction(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Sell transaction with id {transaction_id} not found"
+        )
+    if transaction.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this transaction"
         )
 
     if transaction_update.shares_sold is not None:
@@ -89,13 +95,18 @@ def update_sell_transaction(
 
 
 @router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_sell_transaction(transaction_id: int, db: Session = Depends(get_db)):
+def delete_sell_transaction(transaction_id: int, user_id: int = Query(...), db: Session = Depends(get_db)):
     """Delete a sell transaction"""
     transaction = db.query(SellTransaction).filter(SellTransaction.id == transaction_id).first()
     if not transaction:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Sell transaction with id {transaction_id} not found"
+        )
+    if transaction.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this transaction"
         )
     db.delete(transaction)
     db.commit()

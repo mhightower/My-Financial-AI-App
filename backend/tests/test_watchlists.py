@@ -65,7 +65,7 @@ def test_add_stock_to_watchlist(client, test_user):
 
     # Add stock
     response = client.post(
-        f"/api/v1/watchlists/{watchlist_id}/stocks",
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
         json={
             "ticker": "AAPL",
             "buy_reasons": "Strong ecosystem, recurring revenue",
@@ -93,14 +93,14 @@ def test_max_15_stocks_per_watchlist(client, test_user):
     # Add 15 stocks (should succeed)
     for i in range(15):
         response = client.post(
-            f"/api/v1/watchlists/{watchlist_id}/stocks",
+            f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
             json={"ticker": f"TICK{i}"}
         )
         assert response.status_code == 201
 
     # Try to add 16th stock (should fail)
     response = client.post(
-        f"/api/v1/watchlists/{watchlist_id}/stocks",
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
         json={"ticker": "TICK16"}
     )
     assert response.status_code == 400
@@ -117,13 +117,13 @@ def test_remove_stock_from_watchlist(client, test_user):
     watchlist_id = create_response.json()["id"]
 
     add_response = client.post(
-        f"/api/v1/watchlists/{watchlist_id}/stocks",
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
         json={"ticker": "MSFT"}
     )
     stock_id = add_response.json()["id"]
 
     # Remove stock
-    response = client.delete(f"/api/v1/watchlists/{watchlist_id}/stocks/{stock_id}")
+    response = client.delete(f"/api/v1/watchlists/{watchlist_id}/stocks/{stock_id}?user_id={test_user['id']}")
     assert response.status_code == 204
 
     # Verify removal
@@ -141,14 +141,14 @@ def test_update_stock_thesis(client, test_user):
     watchlist_id = create_response.json()["id"]
 
     add_response = client.post(
-        f"/api/v1/watchlists/{watchlist_id}/stocks",
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
         json={"ticker": "GOOGL", "buy_reasons": "Original reason"}
     )
     stock_id = add_response.json()["id"]
 
     # Update thesis
     response = client.put(
-        f"/api/v1/watchlists/{watchlist_id}/stocks/{stock_id}",
+        f"/api/v1/watchlists/{watchlist_id}/stocks/{stock_id}?user_id={test_user['id']}",
         json={"buy_reasons": "Updated reason"}
     )
     assert response.status_code == 200
@@ -165,7 +165,7 @@ def test_delete_watchlist(client, test_user):
     watchlist_id = create_response.json()["id"]
 
     # Delete
-    response = client.delete(f"/api/v1/watchlists/{watchlist_id}")
+    response = client.delete(f"/api/v1/watchlists/{watchlist_id}?user_id={test_user['id']}")
     assert response.status_code == 204
 
     # Verify deletion
@@ -184,7 +184,7 @@ def test_add_stock_with_price_targets_and_stop_loss(client, test_user):
 
     # Add stock with full details
     response = client.post(
-        f"/api/v1/watchlists/{watchlist_id}/stocks",
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
         json={
             "ticker": "NVDA",
             "buy_reasons": "AI leader, strong growth",
@@ -215,7 +215,7 @@ def test_add_stock_with_optional_fields_omitted(client, test_user):
 
     # Add stock with only ticker
     response = client.post(
-        f"/api/v1/watchlists/{watchlist_id}/stocks",
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
         json={"ticker": "TSLA"}
     )
     assert response.status_code == 201

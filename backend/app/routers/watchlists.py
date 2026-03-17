@@ -57,6 +57,7 @@ def get_watchlist(watchlist_id: int, db: Session = Depends(get_db)):
 def update_watchlist(
     watchlist_id: int,
     watchlist_update: WatchlistUpdate,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Update a watchlist"""
@@ -65,6 +66,11 @@ def update_watchlist(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Watchlist with id {watchlist_id} not found"
+        )
+    if watchlist.owner_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this watchlist"
         )
 
     if watchlist_update.name:
@@ -78,13 +84,18 @@ def update_watchlist(
 
 
 @router.delete("/{watchlist_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_watchlist(watchlist_id: int, db: Session = Depends(get_db)):
+def delete_watchlist(watchlist_id: int, user_id: int = Query(...), db: Session = Depends(get_db)):
     """Delete a watchlist"""
     watchlist = db.query(Watchlist).filter(Watchlist.id == watchlist_id).first()
     if not watchlist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Watchlist with id {watchlist_id} not found"
+        )
+    if watchlist.owner_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this watchlist"
         )
     db.delete(watchlist)
     db.commit()
@@ -95,6 +106,7 @@ def delete_watchlist(watchlist_id: int, db: Session = Depends(get_db)):
 def add_stock_to_watchlist(
     watchlist_id: int,
     stock: StockInWatchlistCreate,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Add a stock to a watchlist"""
@@ -103,6 +115,11 @@ def add_stock_to_watchlist(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Watchlist with id {watchlist_id} not found"
+        )
+    if watchlist.owner_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this watchlist"
         )
 
     # Check if watchlist already has 15 stocks
@@ -154,9 +171,21 @@ def update_stock_in_watchlist(
     watchlist_id: int,
     stock_id: int,
     stock_update: StockInWatchlistUpdate,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Update a stock in a watchlist"""
+    watchlist = db.query(Watchlist).filter(Watchlist.id == watchlist_id).first()
+    if not watchlist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Watchlist with id {watchlist_id} not found"
+        )
+    if watchlist.owner_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this watchlist"
+        )
     stock = db.query(StockInWatchlist).filter(
         StockInWatchlist.id == stock_id,
         StockInWatchlist.watchlist_id == watchlist_id
@@ -187,9 +216,21 @@ def update_stock_in_watchlist(
 def remove_stock_from_watchlist(
     watchlist_id: int,
     stock_id: int,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Remove a stock from a watchlist"""
+    watchlist = db.query(Watchlist).filter(Watchlist.id == watchlist_id).first()
+    if not watchlist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Watchlist with id {watchlist_id} not found"
+        )
+    if watchlist.owner_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this watchlist"
+        )
     stock = db.query(StockInWatchlist).filter(
         StockInWatchlist.id == stock_id,
         StockInWatchlist.watchlist_id == watchlist_id

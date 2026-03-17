@@ -63,9 +63,9 @@ def test_get_user_accounts(client, test_user):
     assert len(response.json()) == 2
 
 
-def test_delete_account(client, test_account):
+def test_delete_account(client, test_user, test_account):
     """Test deleting an account"""
-    response = client.delete(f"/api/v1/accounts/{test_account['id']}")
+    response = client.delete(f"/api/v1/accounts/{test_account['id']}?user_id={test_user['id']}")
     assert response.status_code == 204
 
     get_response = client.get(f"/api/v1/accounts/{test_account['id']}")
@@ -184,7 +184,7 @@ def test_update_holding(client, test_user, test_account):
     holding_id = create_response.json()["id"]
 
     response = client.put(
-        f"/api/v1/holdings/{holding_id}",
+        f"/api/v1/holdings/{holding_id}?user_id={test_user['id']}",
         json={"quantity": 3.0}
     )
     assert response.status_code == 200
@@ -205,7 +205,7 @@ def test_delete_holding(client, test_user, test_account):
     )
     holding_id = create_response.json()["id"]
 
-    response = client.delete(f"/api/v1/holdings/{holding_id}")
+    response = client.delete(f"/api/v1/holdings/{holding_id}?user_id={test_user['id']}")
     assert response.status_code == 204
 
     get_response = client.get(f"/api/v1/holdings/{holding_id}")

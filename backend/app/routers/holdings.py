@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List
 from ..database import get_db
@@ -62,6 +62,7 @@ def get_account(account_id: int, db: Session = Depends(get_db)):
 def update_account(
     account_id: int,
     account_update: BrokerageAccountUpdate,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Update a brokerage account"""
@@ -70,6 +71,11 @@ def update_account(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Account with id {account_id} not found"
+        )
+    if account.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this account"
         )
 
     if account_update.name:
@@ -85,13 +91,18 @@ def update_account(
 
 
 @router.delete("/api/v1/accounts/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_account(account_id: int, db: Session = Depends(get_db)):
+def delete_account(account_id: int, user_id: int = Query(...), db: Session = Depends(get_db)):
     """Delete a brokerage account"""
     account = db.query(BrokerageAccount).filter(BrokerageAccount.id == account_id).first()
     if not account:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Account with id {account_id} not found"
+        )
+    if account.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this account"
         )
     db.delete(account)
     db.commit()
@@ -179,6 +190,7 @@ def get_holding(holding_id: int, db: Session = Depends(get_db)):
 def update_holding(
     holding_id: int,
     holding_update: HoldingUpdate,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Update a holding"""
@@ -187,6 +199,11 @@ def update_holding(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Holding with id {holding_id} not found"
+        )
+    if holding.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this holding"
         )
 
     if holding_update.quantity is not None:
@@ -214,13 +231,18 @@ def update_holding(
 
 
 @router.delete("/api/v1/holdings/{holding_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_holding(holding_id: int, db: Session = Depends(get_db)):
+def delete_holding(holding_id: int, user_id: int = Query(...), db: Session = Depends(get_db)):
     """Delete a holding (close position)"""
     holding = db.query(Holding).filter(Holding.id == holding_id).first()
     if not holding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Holding with id {holding_id} not found"
+        )
+    if holding.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this holding"
         )
     db.delete(holding)
     db.commit()
