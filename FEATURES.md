@@ -9,6 +9,9 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 ### Project Architecture
 
 - [X] Add a DB migration tool
+- [ ] Add some E2E tests
+- [ ] Add Docker setup
+- [ ] Add Global error handling
 
 ### Stock Data API
 
@@ -82,6 +85,7 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 - [X] Fix Delete icon
 
 ### Holdings & Portfolio
+
 - [ ] Record buy order (ticker, shares, price paid, date, account)
 - [ ] Record sell order (ticker, shares, price received, date, account)
 - [ ] Display unrealized gain/loss per position
