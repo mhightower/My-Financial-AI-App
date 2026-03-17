@@ -121,10 +121,10 @@ describe('API Service', () => {
       expect(mockApi.get).toHaveBeenCalledWith('/users/1/accounts')
     })
 
-    it('create passes user_id as query param', async () => {
+    it('merges user_id into request body', async () => {
       mockApi.post.mockResolvedValue({ data: {} })
       await accounts.create(1, { name: 'Fidelity' })
-      expect(mockApi.post).toHaveBeenCalledWith('/accounts', { name: 'Fidelity' }, { params: { user_id: 1 } })
+      expect(mockApi.post).toHaveBeenCalledWith('/accounts', { name: 'Fidelity', user_id: 1 })
     })
 
     it('update calls PUT with user_id param', async () => {
@@ -147,10 +147,10 @@ describe('API Service', () => {
       expect(mockApi.get).toHaveBeenCalledWith('/users/1/holdings')
     })
 
-    it('create passes user_id as query param', async () => {
+    it('merges user_id into request body', async () => {
       mockApi.post.mockResolvedValue({ data: {} })
       await holdings.create(1, { ticker: 'AAPL' })
-      expect(mockApi.post).toHaveBeenCalledWith('/holdings', { ticker: 'AAPL' }, { params: { user_id: 1 } })
+      expect(mockApi.post).toHaveBeenCalledWith('/holdings', { ticker: 'AAPL', user_id: 1 })
     })
 
     it('update calls PUT with user_id param', async () => {

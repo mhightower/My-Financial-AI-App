@@ -9,6 +9,22 @@ const api = axios.create({
   }
 })
 
+// Normalize FastAPI/Pydantic detail field which can be a string or an array
+// of validation error objects like [{ loc, msg, type }]
+function extractDetail(detail) {
+  if (!detail) return null
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail
+      .map(e => {
+        const field = e.loc ? e.loc.filter(l => l !== 'body').join('.') : null
+        return field ? `${field}: ${e.msg}` : e.msg
+      })
+      .join('; ')
+  }
+  return null
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -18,7 +34,7 @@ api.interceptors.response.use(
 
     if (error.response) {
       const { status, data } = error.response
-      const detail = data?.detail || data?.message
+      const detail = extractDetail(data?.detail) || extractDetail(data?.message)
 
       if (status === 400) {
         message = detail || 'Bad request. Please check your input.'
@@ -74,7 +90,7 @@ export const watchlists = {
 export const accounts = {
   list: (userId) => api.get(`/users/${userId}/accounts`),
   get: (id, userId) => api.get(`/accounts/${id}`, { params: { user_id: userId } }),
-  create: (userId, data) => api.post('/accounts', data, { params: { user_id: userId } }),
+  create: (userId, data) => api.post('/accounts', { ...data, user_id: userId }),
   update: (id, data, userId) => api.put(`/accounts/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/accounts/${id}`, { params: { user_id: userId } })
 }
@@ -84,7 +100,7 @@ export const holdings = {
   list: (userId) => api.get(`/users/${userId}/holdings`),
   getPerformance: (userId) => api.get(`/users/${userId}/holdings-performance`),
   get: (id, userId) => api.get(`/holdings/${id}`, { params: { user_id: userId } }),
-  create: (userId, data) => api.post('/holdings', data, { params: { user_id: userId } }),
+  create: (userId, data) => api.post('/holdings', { ...data, user_id: userId }),
   update: (id, data, userId) => api.put(`/holdings/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/holdings/${id}`, { params: { user_id: userId } })
 }

@@ -9,8 +9,6 @@ vi.mock('../../stores/error', () => ({
 }))
 
 // Mock axios so we can control the instance and interceptors
-const mockInterceptorFulfilled = vi.fn()
-const mockInterceptorRejected = vi.fn()
 let capturedResponseInterceptor = null
 
 vi.mock('axios', () => {
@@ -34,19 +32,19 @@ vi.mock('axios', () => {
   }
 })
 
-describe('API Service — response interceptor', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
-    vi.clearAllMocks()
-    capturedResponseInterceptor = null
-  })
+// Import api once — the interceptor is captured at module load time
+import { beforeAll } from 'vitest'
+beforeAll(async () => {
+  await import('../../services/api')
+})
 
-  it('registers a response interceptor on the axios instance', async () => {
-    const axios = (await import('axios')).default
-    // Force re-import of api to trigger interceptor registration
-    await import('../../services/api?t=' + Date.now())
-    const instance = axios.create()
-    expect(instance.interceptors.response.use).toHaveBeenCalled()
+describe('API Service — response interceptor', () => {
+  it('registers a response interceptor on the axios instance', () => {
+    // capturedResponseInterceptor is populated when api.js calls
+    // api.interceptors.response.use(...) at module load time
+    expect(capturedResponseInterceptor).not.toBeNull()
+    expect(typeof capturedResponseInterceptor.fulfilled).toBe('function')
+    expect(typeof capturedResponseInterceptor.rejected).toBe('function')
   })
 })
 
@@ -56,65 +54,90 @@ describe('API Service — interceptor behavior', () => {
     vi.clearAllMocks()
   })
 
-  it('passes through successful responses unchanged', async () => {
-    // Re-import to get fresh interceptor
-    const apiModule = await import('../../services/api')
-    // Interceptor fulfilled handler should return the response as-is
-    if (capturedResponseInterceptor?.fulfilled) {
-      const mockResponse = { data: { id: 1 }, status: 200 }
-      const result = capturedResponseInterceptor.fulfilled(mockResponse)
-      expect(result).toBe(mockResponse)
-    }
+  it('passes through successful responses unchanged', () => {
+    if (!capturedResponseInterceptor?.fulfilled) return
+    const mockResponse = { data: { id: 1 }, status: 200 }
+    const result = capturedResponseInterceptor.fulfilled(mockResponse)
+    expect(result).toBe(mockResponse)
   })
 
   it('calls addError on 500 server error', async () => {
+    if (!capturedResponseInterceptor?.rejected) return
     const { useErrorStore } = await import('../../stores/error')
     const mockAddError = vi.fn()
     useErrorStore.mockReturnValue({ addError: mockAddError })
 
-    if (capturedResponseInterceptor?.rejected) {
-      const error = {
-        response: { status: 500, data: { detail: 'Internal Server Error' } },
-        message: 'Request failed with status code 500'
-      }
-      try {
-        await capturedResponseInterceptor.rejected(error)
-      } catch {
-        // expected to re-throw
-      }
-      expect(mockAddError).toHaveBeenCalled()
-    }
+    const error = { response: { status: 500, data: { detail: 'Internal Server Error' } } }
+    try { await capturedResponseInterceptor.rejected(error) } catch { /* expected */ }
+    expect(mockAddError).toHaveBeenCalledWith('Server error. Please try again later.', 'error', 8000)
   })
 
   it('calls addError on 404 not found error', async () => {
+    if (!capturedResponseInterceptor?.rejected) return
     const { useErrorStore } = await import('../../stores/error')
     const mockAddError = vi.fn()
     useErrorStore.mockReturnValue({ addError: mockAddError })
 
-    if (capturedResponseInterceptor?.rejected) {
-      const error = {
-        response: { status: 404, data: { detail: 'Not found' } },
-        message: 'Request failed with status code 404'
+    const error = { response: { status: 404, data: { detail: 'Not found' } } }
+    try { await capturedResponseInterceptor.rejected(error) } catch { /* expected */ }
+    expect(mockAddError).toHaveBeenCalledWith('Not found', 'error', 5000)
+  })
+
+  it('formats Pydantic array detail into a readable string for 422 errors', async () => {
+    if (!capturedResponseInterceptor?.rejected) return
+    const { useErrorStore } = await import('../../stores/error')
+    const mockAddError = vi.fn()
+    useErrorStore.mockReturnValue({ addError: mockAddError })
+
+    const error = {
+      response: {
+        status: 422,
+        data: {
+          detail: [
+            { type: 'missing', loc: ['body', 'user_id'], msg: 'Field required', input: {}, url: 'https://errors.pydantic.dev/2.5/v/missing' }
+          ]
+        }
       }
-      try {
-        await capturedResponseInterceptor.rejected(error)
-      } catch {
-        // expected to re-throw
-      }
-      expect(mockAddError).toHaveBeenCalled()
     }
+    try { await capturedResponseInterceptor.rejected(error) } catch { /* expected */ }
+
+    const [calledMessage] = mockAddError.mock.calls[0]
+    expect(calledMessage).toContain('user_id')
+    expect(calledMessage).toContain('Field required')
+    expect(calledMessage).not.toContain('[object Object]')
+    expect(calledMessage).not.toContain('errors.pydantic.dev')
+  })
+
+  it('formats multiple Pydantic field errors as a semicolon-separated list', async () => {
+    if (!capturedResponseInterceptor?.rejected) return
+    const { useErrorStore } = await import('../../stores/error')
+    const mockAddError = vi.fn()
+    useErrorStore.mockReturnValue({ addError: mockAddError })
+
+    const error = {
+      response: {
+        status: 422,
+        data: {
+          detail: [
+            { type: 'missing', loc: ['body', 'name'], msg: 'Field required', input: {} },
+            { type: 'missing', loc: ['body', 'account_type'], msg: 'Field required', input: {} }
+          ]
+        }
+      }
+    }
+    try { await capturedResponseInterceptor.rejected(error) } catch { /* expected */ }
+
+    const [calledMessage] = mockAddError.mock.calls[0]
+    expect(calledMessage).toContain('name: Field required')
+    expect(calledMessage).toContain('account_type: Field required')
   })
 
   it('always re-throws errors after handling', async () => {
+    if (!capturedResponseInterceptor?.rejected) return
     const { useErrorStore } = await import('../../stores/error')
     useErrorStore.mockReturnValue({ addError: vi.fn() })
 
-    if (capturedResponseInterceptor?.rejected) {
-      const error = {
-        response: { status: 422, data: { detail: 'Validation error' } },
-        message: 'Request failed with status code 422'
-      }
-      await expect(capturedResponseInterceptor.rejected(error)).rejects.toBe(error)
-    }
+    const error = { response: { status: 422, data: { detail: 'Validation error' } } }
+    await expect(capturedResponseInterceptor.rejected(error)).rejects.toBe(error)
   })
 })

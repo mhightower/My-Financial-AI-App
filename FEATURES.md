@@ -97,11 +97,11 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 
 ### Accounts
 
-- [ ] Create brokerage account (name, type: taxable/IRA/Roth)
-- [ ] Edit brokerage account details
-- [ ] Delete brokerage account
-- [ ] Associate holdings with specific account
-- [ ] Account-level portfolio summary (total value, gain/loss)
+- [X] Create brokerage account (name, type: taxable/IRA/Roth)
+- [X] Edit brokerage account details
+- [X] Delete brokerage account
+- [X] Associate holdings with specific account
+- [X] Account-level portfolio summary (total value, gain/loss)
 - [ ] Account type displays (visual indicator for tax status)
 
 ## Phase 2
