@@ -7,10 +7,10 @@ import os
 import tempfile
 
 import pytest
-from alembic import command
 from alembic.config import Config
-from alembic.runtime.migration import MigrationContext
 from sqlalchemy import create_engine, inspect, text
+
+from alembic import command
 
 
 def get_alembic_config(db_url: str) -> Config:
