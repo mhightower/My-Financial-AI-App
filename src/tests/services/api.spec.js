@@ -73,7 +73,7 @@ describe('API Service', () => {
     it('create passes user_id as query param', async () => {
       mockApi.post.mockResolvedValue({ data: {} })
       await watchlists.create(1, { name: 'Growth' })
-      expect(mockApi.post).toHaveBeenCalledWith('/watchlists?user_id=1', { name: 'Growth' })
+      expect(mockApi.post).toHaveBeenCalledWith('/watchlists', { name: 'Growth' }, { params: { user_id: 1 } })
     })
 
     it('addStock calls POST on watchlist stocks with user_id param', async () => {
@@ -117,7 +117,7 @@ describe('API Service', () => {
     it('create passes user_id as query param', async () => {
       mockApi.post.mockResolvedValue({ data: {} })
       await accounts.create(1, { name: 'Fidelity' })
-      expect(mockApi.post).toHaveBeenCalledWith('/accounts?user_id=1', { name: 'Fidelity' })
+      expect(mockApi.post).toHaveBeenCalledWith('/accounts', { name: 'Fidelity' }, { params: { user_id: 1 } })
     })
 
     it('update calls PUT with user_id param', async () => {
@@ -143,7 +143,7 @@ describe('API Service', () => {
     it('create passes user_id as query param', async () => {
       mockApi.post.mockResolvedValue({ data: {} })
       await holdings.create(1, { ticker: 'AAPL' })
-      expect(mockApi.post).toHaveBeenCalledWith('/holdings?user_id=1', { ticker: 'AAPL' })
+      expect(mockApi.post).toHaveBeenCalledWith('/holdings', { ticker: 'AAPL' }, { params: { user_id: 1 } })
     })
 
     it('update calls PUT with user_id param', async () => {
@@ -163,13 +163,13 @@ describe('API Service', () => {
     it('search calls GET with query and limit', async () => {
       mockApi.get.mockResolvedValue({ data: [] })
       await stocks.search('AAPL', 5)
-      expect(mockApi.get).toHaveBeenCalledWith('/stocks/search?q=AAPL&limit=5')
+      expect(mockApi.get).toHaveBeenCalledWith('/stocks/search', { params: { q: 'AAPL', limit: 5 } })
     })
 
     it('search uses default limit of 10', async () => {
       mockApi.get.mockResolvedValue({ data: [] })
       await stocks.search('MSFT')
-      expect(mockApi.get).toHaveBeenCalledWith('/stocks/search?q=MSFT&limit=10')
+      expect(mockApi.get).toHaveBeenCalledWith('/stocks/search', { params: { q: 'MSFT', limit: 10 } })
     })
 
     it('getQuote calls GET /stocks/:ticker/quote', async () => {
@@ -207,7 +207,7 @@ describe('API Service', () => {
     it('create passes user_id as query param', async () => {
       mockApi.post.mockResolvedValue({ data: {} })
       await sellTransactions.create(1, { ticker: 'AAPL' })
-      expect(mockApi.post).toHaveBeenCalledWith('/sell-transactions?user_id=1', { ticker: 'AAPL' })
+      expect(mockApi.post).toHaveBeenCalledWith('/sell-transactions', { ticker: 'AAPL' }, { params: { user_id: 1 } })
     })
   })
 })

@@ -21,7 +21,7 @@ export const users = {
 export const watchlists = {
   list: (userId) => api.get(`/users/${userId}/watchlists`),
   get: (id) => api.get(`/watchlists/${id}`),
-  create: (userId, data) => api.post(`/watchlists?user_id=${userId}`, data),
+  create: (userId, data) => api.post('/watchlists', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/watchlists/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/watchlists/${id}`, { params: { user_id: userId } }),
 
@@ -35,7 +35,7 @@ export const watchlists = {
 export const accounts = {
   list: (userId) => api.get(`/users/${userId}/accounts`),
   get: (id) => api.get(`/accounts/${id}`),
-  create: (userId, data) => api.post(`/accounts?user_id=${userId}`, data),
+  create: (userId, data) => api.post('/accounts', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/accounts/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/accounts/${id}`, { params: { user_id: userId } })
 }
@@ -45,14 +45,14 @@ export const holdings = {
   list: (userId) => api.get(`/users/${userId}/holdings`),
   getPerformance: (userId) => api.get(`/users/${userId}/holdings-performance`),
   get: (id) => api.get(`/holdings/${id}`),
-  create: (userId, data) => api.post(`/holdings?user_id=${userId}`, data),
+  create: (userId, data) => api.post('/holdings', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/holdings/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/holdings/${id}`, { params: { user_id: userId } })
 }
 
 // Stock endpoints
 export const stocks = {
-  search: (query, limit = 10) => api.get(`/stocks/search?q=${query}&limit=${limit}`),
+  search: (query, limit = 10) => api.get('/stocks/search', { params: { q: query, limit } }),
   getQuote: (ticker) => api.get(`/stocks/${ticker}/quote`),
   getDetail: (ticker) => api.get(`/stocks/${ticker}/detail`),
   getHistory: (ticker, days = 30) => api.get(`/stocks/${ticker}/history?days=${days}`)
@@ -62,7 +62,7 @@ export const stocks = {
 export const sellTransactions = {
   list: (userId) => api.get(`/sell-transactions/users/${userId}/transactions`),
   get: (id) => api.get(`/sell-transactions/${id}`),
-  create: (userId, data) => api.post(`/sell-transactions?user_id=${userId}`, data),
+  create: (userId, data) => api.post('/sell-transactions', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/sell-transactions/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/sell-transactions/${id}`, { params: { user_id: userId } })
 }
