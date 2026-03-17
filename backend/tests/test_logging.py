@@ -124,7 +124,7 @@ class TestRequestLoggingMiddleware:
     def test_middleware_is_registered(self):
         """Logging middleware should be registered on the app."""
         from app.main import app
-        middleware_types = [type(m).__name__ for m in app.user_middleware]
+        [type(m).__name__ for m in app.user_middleware]
         # Check for our custom middleware or @app.middleware("http") decorated ones
         # @app.middleware routes appear as BaseHTTPMiddleware in user_middleware
         # We verify the middleware exists by checking the source instead
