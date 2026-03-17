@@ -1,5 +1,5 @@
 # Load environment variables from .env file BEFORE importing anything else
-import logging
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -15,9 +15,8 @@ from fastapi.responses import JSONResponse  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 from app.database import Base, engine  # noqa: E402
+from app.logger import logger  # noqa: E402
 from app.routers import ai, holdings, sell_transactions, stocks, users, watchlists  # noqa: E402
-
-logger = logging.getLogger(__name__)
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -37,6 +36,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    """Log every request with method, path, status code, and duration."""
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start_time) * 1000
+    logger.info(
+        "{method} {path} {status_code} {duration_ms:.2f}ms",
+        method=request.method,
+        path=request.url.path,
+        status_code=response.status_code,
+        duration_ms=duration_ms,
+    )
+    return response
+
+
 # Register routers
 app.include_router(users.router)
 app.include_router(watchlists.router)
@@ -48,7 +64,7 @@ app.include_router(ai.router)
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    logger.exception("Unhandled error for %s %s", request.method, request.url)
+    logger.exception("Unhandled error for {} {}", request.method, request.url)
     return JSONResponse(
         status_code=500,
         content={"detail": "An unexpected error occurred"}
