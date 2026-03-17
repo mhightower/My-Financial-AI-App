@@ -67,6 +67,7 @@ class BrokerageAccount(Base):
 
     user = relationship("User", back_populates="accounts")
     holdings = relationship("Holding", back_populates="account", cascade="all, delete-orphan")
+    sell_transactions = relationship("SellTransaction", back_populates="account")
 
 
 class Holding(Base):
@@ -99,4 +100,4 @@ class SellTransaction(Base):
     created_at = Column(DateTime, default=_utc_now, nullable=False)
 
     user = relationship("User", back_populates="sell_transactions")
-    account = relationship("BrokerageAccount")
+    account = relationship("BrokerageAccount", back_populates="sell_transactions")
