@@ -35,7 +35,7 @@ def test_get_watchlist(client, test_user):
     watchlist_id = create_response.json()["id"]
 
     # Get watchlist
-    response = client.get(f"/api/v1/watchlists/{watchlist_id}")
+    response = client.get(f"/api/v1/watchlists/{watchlist_id}?user_id={test_user['id']}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == watchlist_id
@@ -127,7 +127,7 @@ def test_remove_stock_from_watchlist(client, test_user):
     assert response.status_code == 204
 
     # Verify removal
-    get_response = client.get(f"/api/v1/watchlists/{watchlist_id}")
+    get_response = client.get(f"/api/v1/watchlists/{watchlist_id}?user_id={test_user['id']}")
     assert len(get_response.json()["stocks"]) == 0
 
 
@@ -169,7 +169,7 @@ def test_delete_watchlist(client, test_user):
     assert response.status_code == 204
 
     # Verify deletion
-    get_response = client.get(f"/api/v1/watchlists/{watchlist_id}")
+    get_response = client.get(f"/api/v1/watchlists/{watchlist_id}?user_id={test_user['id']}")
     assert get_response.status_code == 404
 
 

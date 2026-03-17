@@ -64,10 +64,10 @@ describe('API Service', () => {
       expect(mockApi.get).toHaveBeenCalledWith('/users/1/watchlists')
     })
 
-    it('get calls GET /watchlists/:id', async () => {
+    it('get calls GET /watchlists/:id with user_id param', async () => {
       mockApi.get.mockResolvedValue({ data: {} })
-      await watchlists.get(5)
-      expect(mockApi.get).toHaveBeenCalledWith('/watchlists/5')
+      await watchlists.get(5, 1)
+      expect(mockApi.get).toHaveBeenCalledWith('/watchlists/5', { params: { user_id: 1 } })
     })
 
     it('create passes user_id as query param', async () => {

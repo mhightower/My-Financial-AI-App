@@ -49,13 +49,18 @@ def create_account(
 
 
 @router.get("/api/v1/accounts/{account_id}", response_model=BrokerageAccountResponse)
-def get_account(account_id: int, db: Session = Depends(get_db)):
+def get_account(account_id: int, user_id: int = Query(...), db: Session = Depends(get_db)):
     """Get a specific brokerage account"""
     account = db.query(BrokerageAccount).filter(BrokerageAccount.id == account_id).first()
     if not account:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Account with id {account_id} not found"
+        )
+    if account.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this account"
         )
     return account
 
@@ -177,13 +182,18 @@ def create_holding(
 
 
 @router.get("/api/v1/holdings/{holding_id}", response_model=HoldingResponse)
-def get_holding(holding_id: int, db: Session = Depends(get_db)):
+def get_holding(holding_id: int, user_id: int = Query(...), db: Session = Depends(get_db)):
     """Get a specific holding"""
     holding = db.query(Holding).filter(Holding.id == holding_id).first()
     if not holding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Holding with id {holding_id} not found"
+        )
+    if holding.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this holding"
         )
     return holding
 

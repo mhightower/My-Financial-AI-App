@@ -249,7 +249,7 @@ const addForm = ref({
 
 onMounted(async () => {
   const watchlistId = parseInt(route.params.id)
-  watchlist.value = await watchlistsStore.fetchWatchlist(watchlistId)
+  watchlist.value = await watchlistsStore.fetchWatchlist(watchlistId, currentUser.value?.id)
 })
 
 const openAddModal = () => {

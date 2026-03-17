@@ -22,11 +22,11 @@ export const useWatchlistsStore = defineStore('watchlists', () => {
     }
   }
 
-  const fetchWatchlist = async (id) => {
+  const fetchWatchlist = async (id, userId) => {
     loading.value = true
     error.value = null
     try {
-      const response = await api.watchlists.get(id)
+      const response = await api.watchlists.get(id, userId)
       currentWatchlist.value = response.data
       return response.data
     } catch (err) {

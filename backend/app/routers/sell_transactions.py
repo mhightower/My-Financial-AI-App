@@ -51,13 +51,22 @@ def create_sell_transaction(
 
 
 @router.get("/{transaction_id}", response_model=SellTransactionResponse)
-def get_sell_transaction(transaction_id: int, db: Session = Depends(get_db)):
+def get_sell_transaction(
+    transaction_id: int,
+    user_id: int = Query(...),
+    db: Session = Depends(get_db)
+):
     """Get a specific sell transaction"""
     transaction = db.query(SellTransaction).filter(SellTransaction.id == transaction_id).first()
     if not transaction:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Sell transaction with id {transaction_id} not found"
+        )
+    if transaction.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this transaction"
         )
     return transaction
 

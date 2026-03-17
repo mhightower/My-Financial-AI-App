@@ -20,7 +20,7 @@ export const users = {
 // Watchlist endpoints
 export const watchlists = {
   list: (userId) => api.get(`/users/${userId}/watchlists`),
-  get: (id) => api.get(`/watchlists/${id}`),
+  get: (id, userId) => api.get(`/watchlists/${id}`, { params: { user_id: userId } }),
   create: (userId, data) => api.post('/watchlists', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/watchlists/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/watchlists/${id}`, { params: { user_id: userId } }),
@@ -34,7 +34,7 @@ export const watchlists = {
 // Brokerage account endpoints
 export const accounts = {
   list: (userId) => api.get(`/users/${userId}/accounts`),
-  get: (id) => api.get(`/accounts/${id}`),
+  get: (id, userId) => api.get(`/accounts/${id}`, { params: { user_id: userId } }),
   create: (userId, data) => api.post('/accounts', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/accounts/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/accounts/${id}`, { params: { user_id: userId } })
@@ -44,7 +44,7 @@ export const accounts = {
 export const holdings = {
   list: (userId) => api.get(`/users/${userId}/holdings`),
   getPerformance: (userId) => api.get(`/users/${userId}/holdings-performance`),
-  get: (id) => api.get(`/holdings/${id}`),
+  get: (id, userId) => api.get(`/holdings/${id}`, { params: { user_id: userId } }),
   create: (userId, data) => api.post('/holdings', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/holdings/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/holdings/${id}`, { params: { user_id: userId } })
@@ -61,7 +61,7 @@ export const stocks = {
 // Sell transactions endpoints
 export const sellTransactions = {
   list: (userId) => api.get(`/sell-transactions/users/${userId}/transactions`),
-  get: (id) => api.get(`/sell-transactions/${id}`),
+  get: (id, userId) => api.get(`/sell-transactions/${id}`, { params: { user_id: userId } }),
   create: (userId, data) => api.post('/sell-transactions', data, { params: { user_id: userId } }),
   update: (id, data, userId) => api.put(`/sell-transactions/${id}`, data, { params: { user_id: userId } }),
   delete: (id, userId) => api.delete(`/sell-transactions/${id}`, { params: { user_id: userId } })

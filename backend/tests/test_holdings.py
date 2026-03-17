@@ -40,9 +40,9 @@ def test_create_account(client, test_user):
     assert data["account_type"] == "IRA"
 
 
-def test_get_account(client, test_account):
+def test_get_account(client, test_user, test_account):
     """Test getting an account"""
-    response = client.get(f"/api/v1/accounts/{test_account['id']}")
+    response = client.get(f"/api/v1/accounts/{test_account['id']}?user_id={test_user['id']}")
     assert response.status_code == 200
     assert response.json()["id"] == test_account["id"]
 
@@ -68,7 +68,7 @@ def test_delete_account(client, test_user, test_account):
     response = client.delete(f"/api/v1/accounts/{test_account['id']}?user_id={test_user['id']}")
     assert response.status_code == 204
 
-    get_response = client.get(f"/api/v1/accounts/{test_account['id']}")
+    get_response = client.get(f"/api/v1/accounts/{test_account['id']}?user_id={test_user['id']}")
     assert get_response.status_code == 404
 
 
@@ -135,7 +135,7 @@ def test_get_holding(client, test_user, test_account):
     )
     holding_id = create_response.json()["id"]
 
-    response = client.get(f"/api/v1/holdings/{holding_id}")
+    response = client.get(f"/api/v1/holdings/{holding_id}?user_id={test_user['id']}")
     assert response.status_code == 200
     assert response.json()["ticker"] == "GOOGL"
 
@@ -208,5 +208,5 @@ def test_delete_holding(client, test_user, test_account):
     response = client.delete(f"/api/v1/holdings/{holding_id}?user_id={test_user['id']}")
     assert response.status_code == 204
 
-    get_response = client.get(f"/api/v1/holdings/{holding_id}")
+    get_response = client.get(f"/api/v1/holdings/{holding_id}?user_id={test_user['id']}")
     assert get_response.status_code == 404

@@ -43,13 +43,18 @@ def create_watchlist(
 
 
 @router.get("/{watchlist_id}", response_model=WatchlistDetailResponse)
-def get_watchlist(watchlist_id: int, db: Session = Depends(get_db)):
+def get_watchlist(watchlist_id: int, user_id: int = Query(...), db: Session = Depends(get_db)):
     """Get a watchlist with all its stocks"""
     watchlist = db.query(Watchlist).filter(Watchlist.id == watchlist_id).first()
     if not watchlist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Watchlist with id {watchlist_id} not found"
+        )
+    if watchlist.owner_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this watchlist"
         )
     return watchlist
 
@@ -152,9 +157,21 @@ def add_stock_to_watchlist(
 def get_stock_in_watchlist(
     watchlist_id: int,
     stock_id: int,
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """Get a specific stock from a watchlist"""
+    watchlist = db.query(Watchlist).filter(Watchlist.id == watchlist_id).first()
+    if not watchlist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Watchlist with id {watchlist_id} not found"
+        )
+    if watchlist.owner_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this watchlist"
+        )
     stock = db.query(StockInWatchlist).filter(
         StockInWatchlist.id == stock_id,
         StockInWatchlist.watchlist_id == watchlist_id
