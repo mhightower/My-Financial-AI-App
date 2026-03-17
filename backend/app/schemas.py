@@ -195,8 +195,8 @@ class StockSearchResult(BaseModel):
 class SellTransactionCreate(BaseModel):
     account_id: int
     ticker: str
-    shares_sold: float
-    price_received: float
+    shares_sold: float = Field(..., gt=0)
+    price_received: float = Field(..., gt=0)
     sell_date: Optional[datetime] = None
     notes: Optional[str] = None
 

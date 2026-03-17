@@ -210,3 +210,25 @@ def test_delete_holding(client, test_user, test_account):
 
     get_response = client.get(f"/api/v1/holdings/{holding_id}?user_id={test_user['id']}")
     assert get_response.status_code == 404
+
+
+def test_sell_transaction_validation(client, test_user, test_account):
+    """Test that SellTransactionCreate rejects zero/negative shares_sold and price_received"""
+    base = {
+        "account_id": test_account["id"],
+        "ticker": "AAPL",
+        "shares_sold": 10.0,
+        "price_received": 150.0
+    }
+
+    # shares_sold = 0 should fail
+    r = client.post(f"/api/v1/sell-transactions?user_id={test_user['id']}", json={**base, "shares_sold": 0})
+    assert r.status_code == 422
+
+    # shares_sold negative should fail
+    r = client.post(f"/api/v1/sell-transactions?user_id={test_user['id']}", json={**base, "shares_sold": -1})
+    assert r.status_code == 422
+
+    # price_received = 0 should fail
+    r = client.post(f"/api/v1/sell-transactions?user_id={test_user['id']}", json={**base, "price_received": 0})
+    assert r.status_code == 422
