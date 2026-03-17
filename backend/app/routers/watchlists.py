@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
@@ -147,9 +148,16 @@ def add_stock_to_watchlist(
         sell_price=stock.sell_price,
         stop_loss_pct=stock.stop_loss_pct,
     )
-    db.add(db_stock)
-    db.commit()
-    db.refresh(db_stock)
+    try:
+        db.add(db_stock)
+        db.commit()
+        db.refresh(db_stock)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"{stock.ticker} is already in this watchlist"
+        )
     return db_stock
 
 

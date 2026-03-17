@@ -226,3 +226,25 @@ def test_add_stock_with_optional_fields_omitted(client, test_user):
     assert data["buy_price"] is None
     assert data["sell_price"] is None
     assert data["stop_loss_pct"] is None
+
+
+def test_duplicate_ticker_rejected(client, test_user):
+    """Test that adding the same ticker twice to a watchlist returns 409"""
+    create_response = client.post(
+        f"/api/v1/watchlists?user_id={test_user['id']}",
+        json={"name": "Dedupe Test"}
+    )
+    watchlist_id = create_response.json()["id"]
+
+    first = client.post(
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
+        json={"ticker": "AAPL"}
+    )
+    assert first.status_code == 201
+
+    second = client.post(
+        f"/api/v1/watchlists/{watchlist_id}/stocks?user_id={test_user['id']}",
+        json={"ticker": "AAPL"}
+    )
+    assert second.status_code == 409
+    assert "already in this watchlist" in second.json()["detail"]

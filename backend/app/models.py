@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -49,6 +49,8 @@ class StockInWatchlist(Base):
     sell_price = Column(Float, nullable=True)  # Target sell price
     stop_loss_pct = Column(Float, nullable=True)  # Stop loss percentage
     added_date = Column(DateTime, default=_utc_now, nullable=False)
+
+    __table_args__ = (UniqueConstraint("watchlist_id", "ticker", name="uq_watchlist_ticker"),)
 
     watchlist = relationship("Watchlist", back_populates="stocks")
 
