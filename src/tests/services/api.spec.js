@@ -2,12 +2,19 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import axios from 'axios'
 import { users, watchlists, accounts, holdings, stocks, sellTransactions } from '../../services/api'
 
+vi.mock('../../stores/error', () => ({
+  useErrorStore: vi.fn(() => ({ addError: vi.fn() }))
+}))
+
 vi.mock('axios', () => {
   const mockInstance = {
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
-    delete: vi.fn()
+    delete: vi.fn(),
+    interceptors: {
+      response: { use: vi.fn() }
+    }
   }
   return {
     default: {

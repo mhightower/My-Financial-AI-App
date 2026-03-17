@@ -39,6 +39,7 @@
     </main>
 
     <UserSwitcherModal ref="userModal" />
+    <GlobalErrorToast />
   </div>
 </template>
 
@@ -46,6 +47,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from './stores/user'
 import UserSwitcherModal from './components/UserSwitcherModal.vue'
+import GlobalErrorToast from './components/GlobalErrorToast.vue'
 
 const userStore = useUserStore()
 const userModal = ref(null)

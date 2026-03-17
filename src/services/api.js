@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useErrorStore } from '../stores/error'
 
 const api = axios.create({
   baseURL: '/api/v1',
@@ -7,6 +8,44 @@ const api = axios.create({
     'Content-Type': 'application/json'
   }
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const errorStore = useErrorStore()
+
+    let message = 'An unexpected error occurred.'
+
+    if (error.response) {
+      const { status, data } = error.response
+      const detail = data?.detail || data?.message
+
+      if (status === 400) {
+        message = detail || 'Bad request. Please check your input.'
+      } else if (status === 401) {
+        message = 'Unauthorized. Please log in again.'
+      } else if (status === 403) {
+        message = 'You do not have permission to perform this action.'
+      } else if (status === 404) {
+        message = detail || 'The requested resource was not found.'
+      } else if (status === 422) {
+        message = detail || 'Validation failed. Please check your input.'
+      } else if (status >= 500) {
+        message = 'Server error. Please try again later.'
+      } else {
+        message = detail || `Request failed (${status}).`
+      }
+    } else if (error.code === 'ECONNABORTED') {
+      message = 'Request timed out. Please check your connection and try again.'
+    } else if (!error.response) {
+      message = 'Network error. Please check your connection.'
+    }
+
+    errorStore.addError(message, 'error', error.response?.status >= 500 ? 8000 : 5000)
+
+    return Promise.reject(error)
+  }
+)
 
 // User endpoints
 export const users = {
