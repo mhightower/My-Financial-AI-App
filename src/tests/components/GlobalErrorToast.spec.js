@@ -4,13 +4,6 @@ import { createPinia, setActivePinia } from 'pinia'
 import GlobalErrorToast from '../../components/GlobalErrorToast.vue'
 import { useErrorStore } from '../../stores/error'
 
-// Stub Teleport so rendered output stays in the wrapper tree
-const mountOptions = {
-  global: {
-    stubs: { Teleport: true }
-  }
-}
-
 describe('GlobalErrorToast.vue', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
