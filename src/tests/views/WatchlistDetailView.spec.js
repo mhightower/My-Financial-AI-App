@@ -20,13 +20,6 @@ const MOCK_STOCK_NO_THESIS = {
   buy_price: null, sell_price: null, stop_loss_pct: null
 }
 
-const MOCK_ANALYSIS = {
-  quality_score: 8,
-  conviction_level: 'High',
-  strengths: ['Strong ecosystem moat'],
-  blind_spots: ['Valuation risk'],
-  suggestions: ['Add P/E ceiling trigger']
-}
 
 vi.mock('../../services/api', () => ({
   stocks: {
