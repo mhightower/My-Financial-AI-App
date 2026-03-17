@@ -7,7 +7,7 @@
         <p v-if="watchlist.description" class="page-subtitle">{{ watchlist.description }}</p>
       </div>
       <button
-        @click="openAddModal"
+        @click="showAddModal = true"
         class="btn btn-primary"
         :disabled="watchlist.stocks?.length >= 15"
         :title="watchlist.stocks?.length >= 15 ? 'Watchlist full (15 max)' : ''"
@@ -72,122 +72,19 @@
       </div>
     </div>
 
-    <!-- AI Analysis Modal -->
-    <div v-if="showAnalysisModal" ref="analysisModalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="analysis-modal-title" @click.self="showAnalysisModal = false" @keydown.escape="showAnalysisModal = false">
-      <div class="modal modal-wide">
-        <div class="modal-header">
-          <h2 id="analysis-modal-title">Thesis Analysis — <span class="mono-amber">{{ analysisStock?.ticker }}</span></h2>
-          <button @click="showAnalysisModal = false" class="close-btn" aria-label="Close">✕</button>
-        </div>
-        <div class="modal-body" v-if="analysisResult">
-          <div class="analysis-score-row">
-            <div class="score-badge" :class="scoreClass">{{ analysisResult.quality_score }}<span style="font-size:1rem; font-weight:400;">/10</span></div>
-            <span class="conviction-badge">{{ analysisResult.conviction_level }} conviction</span>
-          </div>
-          <div class="analysis-grid">
-            <div class="analysis-section">
-              <span class="analysis-label strengths-label">Strengths</span>
-              <ul>
-                <li v-for="(s, i) in analysisResult.strengths" :key="i" class="strength-item">{{ s }}</li>
-              </ul>
-            </div>
-            <div class="analysis-section">
-              <span class="analysis-label blind-spots-label">Blind Spots</span>
-              <ul>
-                <li v-for="(b, i) in analysisResult.blind_spots" :key="i" class="blind-spot-item">{{ b }}</li>
-              </ul>
-            </div>
-            <div class="analysis-section">
-              <span class="analysis-label suggestions-label">Suggestions</span>
-              <ul>
-                <li v-for="(s, i) in analysisResult.suggestions" :key="i" class="suggestion-item">{{ s }}</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ThesisAnalysisModal
+      v-model="showAnalysisModal"
+      :stock="analysisStock"
+      :result="analysisResult"
+      :score-class="scoreClass"
+    />
 
-    <!-- Add Stock Modal -->
-    <div v-if="showAddModal" ref="addModalTrapRef" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-stock-modal-title" @click.self="closeAddModal" @keydown.escape="closeAddModal">
-      <div class="modal modal-wide">
-        <div class="modal-header">
-          <h2 id="add-stock-modal-title">Add Stock to Watchlist</h2>
-          <button @click="closeAddModal" class="close-btn" aria-label="Close">✕</button>
-        </div>
-        <form @submit.prevent="addStock" class="modal-body">
-          <div class="form-group" style="position: relative;">
-            <label for="ticker">Ticker *</label>
-            <input
-              id="ticker"
-              v-model="addForm.ticker"
-              type="text"
-              placeholder="Search ticker…"
-              @input="searchStocks"
-              required
-            />
-            <div v-if="searchError" class="search-hint">{{ searchError }}</div>
-            <div v-if="searchResults.length > 0" class="search-dropdown" role="listbox" aria-label="Stock search results">
-              <div
-                v-for="result in searchResults"
-                :key="result.ticker"
-                class="search-result"
-                role="option"
-                @click="selectStock(result)"
-              >
-                <span class="mono-amber" style="font-size:0.82rem; font-weight:600;">{{ result.ticker }}</span>
-                <span style="color:var(--text-1); font-size:0.8rem; margin-left:0.5rem;">{{ result.name }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="thesis-inputs">
-            <div class="form-group">
-              <label for="buy-reasons">Buy Reasons</label>
-              <textarea id="buy-reasons" v-model="addForm.buy_reasons" rows="3" placeholder="Why would you buy? What's the thesis?"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="sell-conditions">Sell Conditions</label>
-              <textarea id="sell-conditions" v-model="addForm.sell_conditions" rows="3" placeholder="When would you sell? What invalidates the thesis?"></textarea>
-            </div>
-          </div>
-
-          <div class="ai-draft-row">
-            <button
-              type="button"
-              @click="generateThesisDraft(addForm.ticker, addForm)"
-              class="btn btn-ghost btn-sm ai-btn"
-              :disabled="!addForm.ticker || generatingDraft"
-            >{{ generatingDraft ? 'Generating…' : '✦ Generate with AI' }}</button>
-
-            <span v-if="draftError" class="draft-error">{{ draftError }}</span>
-          </div>
-
-          <div class="form-row-3">
-            <div class="form-group">
-              <label for="buy-price">Buy Target ($)</label>
-              <input id="buy-price" v-model.number="addForm.buy_price" type="number" step="0.01" placeholder="0.00" />
-            </div>
-            <div class="form-group">
-              <label for="sell-price">Sell Target ($)</label>
-              <input id="sell-price" v-model.number="addForm.sell_price" type="number" step="0.01" placeholder="0.00" />
-            </div>
-            <div class="form-group">
-              <label for="stop-loss">Stop Loss (%)</label>
-              <input id="stop-loss" v-model.number="addForm.stop_loss_pct" type="number" step="0.1" min="0" max="100" placeholder="15" />
-            </div>
-          </div>
-
-          <div v-if="error" class="error-msg">{{ error }}</div>
-          <div class="form-actions">
-            <button type="button" @click="closeAddModal" class="btn btn-ghost">Cancel</button>
-            <button type="submit" class="btn btn-primary" :disabled="loading">
-              {{ loading ? 'Adding…' : 'Add Stock' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <AddStockModal
+      v-model="showAddModal"
+      :watchlist-id="watchlist?.id"
+      :watchlist-stock-count="watchlist?.stocks?.length ?? 0"
+      :user-id="currentUser?.id"
+    />
 
     <ConfirmModal
       v-model="showRemoveConfirm"
@@ -204,11 +101,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWatchlistsStore } from '../stores/watchlists'
 import { useUserStore } from '../stores/user'
-import { useFocusTrap } from '../composables/useFocusTrap'
-import { useDebounce } from '../composables/useDebounce'
 import { useAIThesis } from '../composables/useAIThesis'
 import ConfirmModal from '../components/ConfirmModal.vue'
-import * as api from '../services/api'
+import ThesisAnalysisModal from '../components/ThesisAnalysisModal.vue'
+import AddStockModal from '../components/AddStockModal.vue'
 
 const route = useRoute()
 const watchlistsStore = useWatchlistsStore()
@@ -217,12 +113,6 @@ const watchlist = computed(() => watchlistsStore.currentWatchlist)
 const currentUser = computed(() => userStore.currentUser)
 
 const showAddModal = ref(false)
-const loading = ref(false)
-const error = ref(null)
-const searchResults = ref([])
-const searchError = ref(null)
-
-const { trapRef: addModalTrapRef } = useFocusTrap(showAddModal)
 
 const {
   analyzingId,
@@ -231,112 +121,12 @@ const {
   analysisStock,
   scoreClass,
   analyzeThesis,
-  generatingDraft,
-  draftError,
-  generateThesisDraft,
 } = useAIThesis()
-
-const { trapRef: analysisModalTrapRef } = useFocusTrap(showAnalysisModal)
-
-const addForm = ref({
-  ticker: '',
-  buy_reasons: '',
-  sell_conditions: '',
-  buy_price: null,
-  sell_price: null,
-  stop_loss_pct: null
-})
 
 onMounted(async () => {
   const watchlistId = parseInt(route.params.id)
   watchlist.value = await watchlistsStore.fetchWatchlist(watchlistId, currentUser.value?.id)
 })
-
-const openAddModal = () => {
-  addForm.value = {
-    ticker: '',
-    buy_reasons: '',
-    sell_conditions: '',
-    buy_price: null,
-    sell_price: null,
-    stop_loss_pct: null
-  }
-  searchResults.value = []
-  searchError.value = null
-  showAddModal.value = true
-  error.value = null
-}
-
-const closeAddModal = () => {
-  showAddModal.value = false
-  error.value = null
-}
-
-const { debounced: debouncedSearch } = useDebounce(async () => {
-  try {
-    const response = await api.stocks.search(addForm.value.ticker, 5)
-    searchResults.value = response.data
-    searchError.value = null
-  } catch (err) {
-    searchResults.value = []
-    const status = err.response?.status
-    const detail = err.response?.data?.detail || ''
-    if (status === 429 || detail.toLowerCase().includes('rate limit')) {
-      searchError.value = 'Search unavailable (API limit reached) — type ticker directly'
-    } else if (status >= 500 || status === 502) {
-      searchError.value = 'Search unavailable — type ticker directly'
-    } else {
-      searchError.value = null
-    }
-  }
-}, 300)
-
-const searchStocks = () => {
-  if (addForm.value.ticker.length < 1) {
-    searchResults.value = []
-    searchError.value = null
-    return
-  }
-  debouncedSearch()
-}
-
-const selectStock = (stock) => {
-  addForm.value.ticker = stock.ticker
-  searchResults.value = []
-}
-
-const addStock = async () => {
-  if (!addForm.value.ticker.trim()) {
-    error.value = 'Ticker is required'
-    return
-  }
-
-  if (watchlist.value.stocks.length >= 15) {
-    error.value = 'Watchlist is full (max 15 stocks)'
-    return
-  }
-
-  loading.value = true
-  error.value = null
-
-  try {
-    const stockData = {
-      ticker: addForm.value.ticker.toUpperCase(),
-      buy_reasons: addForm.value.buy_reasons || null,
-      sell_conditions: addForm.value.sell_conditions || null,
-      buy_price: addForm.value.buy_price,
-      sell_price: addForm.value.sell_price,
-      stop_loss_pct: addForm.value.stop_loss_pct ? addForm.value.stop_loss_pct / 100 : null
-    }
-
-    await watchlistsStore.addStockToWatchlist(watchlist.value.id, stockData, currentUser.value?.id)
-    closeAddModal()
-  } catch (err) {
-    error.value = 'Failed to add stock: ' + (err.response?.data?.detail || err.message)
-  } finally {
-    loading.value = false
-  }
-}
 
 const showRemoveConfirm = ref(false)
 const pendingRemoveStockId = ref(null)
@@ -349,8 +139,8 @@ const removeStockConfirm = (stockId) => {
 const removeStock = async (stockId) => {
   try {
     await watchlistsStore.removeStockFromWatchlist(watchlist.value.id, stockId, currentUser.value?.id)
-  } catch (err) {
-    error.value = 'Failed to remove stock'
+  } catch {
+    // error handled by store
   }
 }
 </script>
@@ -454,55 +244,6 @@ const removeStock = async (stockId) => {
   line-height: 1.5;
 }
 
-/* Search hint (rate limit message) */
-.search-hint {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  font-size: 0.75rem;
-  color: var(--amber);
-  background: var(--bg-2);
-  border: 1px solid var(--border-hi);
-  border-top: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0 0 var(--radius) var(--radius);
-  z-index: 10;
-}
-
-/* Search dropdown */
-.search-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--bg-2);
-  border: 1px solid var(--border-hi);
-  border-top: none;
-  border-radius: 0 0 var(--radius) var(--radius);
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 10;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.search-result {
-  padding: 0.65rem 0.75rem;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.12s;
-}
-
-.search-result:last-child { border-bottom: none; }
-.search-result:hover { background: var(--bg-3); }
-
-/* Thesis inputs grid */
-.thesis-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
 /* AI button */
 .ai-btn {
   font-size: 0.72rem;
@@ -512,93 +253,7 @@ const removeStock = async (stockId) => {
 }
 .ai-btn:hover:not(:disabled) { background: rgba(217, 157, 56, 0.08); }
 
-/* AI draft row */
-.ai-draft-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: -0.25rem;
-}
-.draft-error { font-size: 0.78rem; color: var(--red); }
-
-/* Analysis modal */
-.analysis-score-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1.25rem;
-}
-.score-badge {
-  font-family: var(--font-mono);
-  font-size: 2.5rem;
-  font-weight: 700;
-  line-height: 1;
-}
-.score-good { color: var(--green); }
-.score-neutral { color: var(--amber); }
-.score-poor { color: var(--red); }
-
-.conviction-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-1);
-  border: 1px solid var(--border-hi);
-  padding: 0.3rem 0.7rem;
-  border-radius: 2rem;
-}
-.analysis-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-.analysis-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.analysis-label {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.strengths-label { color: var(--green); }
-.blind-spots-label { color: var(--red); }
-.suggestions-label { color: var(--amber); }
-
-.analysis-section ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin: 0;
-  padding: 0;
-}
-.analysis-section li {
-  font-size: 0.82rem;
-  color: var(--text-0);
-  line-height: 1.55;
-  padding-left: 0.85rem;
-  position: relative;
-}
-.analysis-section li::before {
-  content: "·";
-  position: absolute;
-  left: 0;
-  font-weight: 700;
-}
-.strength-item::before { color: var(--green); }
-.blind-spot-item::before { color: var(--red); }
-.suggestion-item::before { color: var(--amber); }
-
 @media (max-width: 640px) {
   .thesis-row { grid-template-columns: 1fr; }
-  .thesis-inputs { grid-template-columns: 1fr; }
-  .form-row-3 { grid-template-columns: 1fr; }
-  .analysis-grid { grid-template-columns: 1fr; }
 }
 </style>
