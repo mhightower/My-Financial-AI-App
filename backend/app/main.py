@@ -14,12 +14,17 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
-from app.database import Base, engine  # noqa: E402
+from alembic import command
+from alembic.config import Config  # noqa: E402
+
 from app.logger import logger  # noqa: E402
 from app.routers import ai, holdings, sell_transactions, stocks, users, watchlists  # noqa: E402
 
-# Initialize database tables
-Base.metadata.create_all(bind=engine)
+# Run Alembic migrations on startup
+_alembic_cfg = Config(str(backend_dir / "alembic.ini"))
+_alembic_cfg.set_main_option("script_location", str(backend_dir / "alembic"))
+command.upgrade(_alembic_cfg, "head")
+logger.info("Database migrations applied")
 
 app = FastAPI(
     title="Financial App API",
