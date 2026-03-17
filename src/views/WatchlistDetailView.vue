@@ -155,10 +155,11 @@
           <div class="ai-draft-row">
             <button
               type="button"
-              @click="generateThesisDraft"
+              @click="generateThesisDraft(addForm.ticker, addForm)"
               class="btn btn-ghost btn-sm ai-btn"
               :disabled="!addForm.ticker || generatingDraft"
             >{{ generatingDraft ? 'Generating…' : '✦ Generate with AI' }}</button>
+
             <span v-if="draftError" class="draft-error">{{ draftError }}</span>
           </div>
 
@@ -196,6 +197,8 @@ import { useRoute } from 'vue-router'
 import { useWatchlistsStore } from '../stores/watchlists'
 import { useUserStore } from '../stores/user'
 import { useFocusTrap } from '../composables/useFocusTrap'
+import { useDebounce } from '../composables/useDebounce'
+import { useAIThesis } from '../composables/useAIThesis'
 import * as api from '../services/api'
 
 const route = useRoute()
@@ -209,62 +212,22 @@ const loading = ref(false)
 const error = ref(null)
 const searchResults = ref([])
 const searchError = ref(null)
-const searchTimeout = ref(null)
 
 const { trapRef: addModalTrapRef } = useFocusTrap(showAddModal)
 
-// AI Thesis Analyzer
-const analyzingId = ref(null)
-const showAnalysisModal = ref(false)
-const analysisResult = ref(null)
-const analysisStock = ref(null)
-const analysisError = ref(null)
+const {
+  analyzingId,
+  showAnalysisModal,
+  analysisResult,
+  analysisStock,
+  scoreClass,
+  analyzeThesis,
+  generatingDraft,
+  draftError,
+  generateThesisDraft,
+} = useAIThesis()
+
 const { trapRef: analysisModalTrapRef } = useFocusTrap(showAnalysisModal)
-
-const scoreClass = computed(() => {
-  const s = analysisResult.value?.quality_score ?? 0
-  if (s >= 7) return 'score-good'
-  if (s >= 5) return 'score-neutral'
-  return 'score-poor'
-})
-
-const analyzeThesis = async (stock) => {
-  analyzingId.value = stock.id
-  analysisError.value = null
-  try {
-    const response = await api.ai.analyzeThesis({
-      ticker: stock.ticker,
-      buy_reasons: stock.buy_reasons || '',
-      sell_conditions: stock.sell_conditions || ''
-    })
-    analysisResult.value = response.data
-    analysisStock.value = stock
-    showAnalysisModal.value = true
-  } catch (err) {
-    analysisError.value = 'Analysis failed. Try again shortly.'
-  } finally {
-    analyzingId.value = null
-  }
-}
-
-// AI Draft Thesis Generator
-const generatingDraft = ref(false)
-const draftError = ref(null)
-
-const generateThesisDraft = async () => {
-  if (!addForm.value.ticker) return
-  generatingDraft.value = true
-  draftError.value = null
-  try {
-    const response = await api.ai.draftThesis(addForm.value.ticker.toUpperCase())
-    addForm.value.buy_reasons = response.data.buy_reasons
-    addForm.value.sell_conditions = response.data.sell_conditions
-  } catch (err) {
-    draftError.value = 'Could not generate draft. Enter a valid ticker and try again.'
-  } finally {
-    generatingDraft.value = false
-  }
-}
 
 const addForm = ref({
   ticker: '',
@@ -300,33 +263,32 @@ const closeAddModal = () => {
   error.value = null
 }
 
-const searchStocks = async () => {
-  if (searchTimeout.value) clearTimeout(searchTimeout.value)
+const { debounced: debouncedSearch } = useDebounce(async () => {
+  try {
+    const response = await api.stocks.search(addForm.value.ticker, 5)
+    searchResults.value = response.data
+    searchError.value = null
+  } catch (err) {
+    searchResults.value = []
+    const status = err.response?.status
+    const detail = err.response?.data?.detail || ''
+    if (status === 429 || detail.toLowerCase().includes('rate limit')) {
+      searchError.value = 'Search unavailable (API limit reached) — type ticker directly'
+    } else if (status >= 500 || status === 502) {
+      searchError.value = 'Search unavailable — type ticker directly'
+    } else {
+      searchError.value = null
+    }
+  }
+}, 300)
 
+const searchStocks = () => {
   if (addForm.value.ticker.length < 1) {
     searchResults.value = []
     searchError.value = null
     return
   }
-
-  searchTimeout.value = setTimeout(async () => {
-    try {
-      const response = await api.stocks.search(addForm.value.ticker, 5)
-      searchResults.value = response.data
-      searchError.value = null
-    } catch (err) {
-      searchResults.value = []
-      const status = err.response?.status
-      const detail = err.response?.data?.detail || ''
-      if (status === 429 || detail.toLowerCase().includes('rate limit')) {
-        searchError.value = 'Search unavailable (API limit reached) — type ticker directly'
-      } else if (status >= 500 || status === 502) {
-        searchError.value = 'Search unavailable — type ticker directly'
-      } else {
-        searchError.value = null
-      }
-    }
-  }, 300)
+  debouncedSearch()
 }
 
 const selectStock = (stock) => {
