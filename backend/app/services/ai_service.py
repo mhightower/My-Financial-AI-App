@@ -4,7 +4,7 @@ import os
 from anthropic import AsyncAnthropic
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-MODEL = "claude-haiku-4-5-20251001"
+MODEL = os.getenv("AI_MODEL", "claude-haiku-4-5-20251001")
 
 ANALYZE_THESIS_PROMPT = """\
 You are a rigorous investment analyst reviewing an investor's thesis for {ticker}.
