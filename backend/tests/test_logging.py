@@ -1,5 +1,4 @@
 """Tests for structured logging with loguru."""
-import sys
 from io import StringIO
 
 import pytest
@@ -48,6 +47,7 @@ class TestLoggerConfiguration:
     def test_logger_is_configured(self):
         """Logger should be a loguru logger instance."""
         from loguru import logger as loguru_logger
+
         from app.logger import logger
         # The logger from app.logger should be loguru's logger
         assert logger is loguru_logger
@@ -60,9 +60,9 @@ class TestLoggerConfiguration:
     def test_log_level_configurable_via_env(self, monkeypatch):
         """Log level should be configurable via LOG_LEVEL environment variable."""
         monkeypatch.setenv("LOG_LEVEL", "DEBUG")
-        from app.logger import get_log_level
         # Re-import to pick up the env var
         import importlib
+
         import app.logger
         importlib.reload(app.logger)
         from app.logger import get_log_level as get_log_level_reloaded
@@ -129,6 +129,7 @@ class TestRequestLoggingMiddleware:
         # @app.middleware routes appear as BaseHTTPMiddleware in user_middleware
         # We verify the middleware exists by checking the source instead
         import inspect
+
         import app.main as main_module
         source = inspect.getsource(main_module)
         assert 'middleware("http")' in source or "RequestLoggingMiddleware" in source
@@ -140,6 +141,7 @@ class TestErrorLogging:
     def test_exception_logged_at_error_level(self):
         """Unhandled exceptions should be logged at ERROR level."""
         import inspect
+
         import app.main as main_module
         source = inspect.getsource(main_module.unhandled_exception_handler)
         assert "logger.exception" in source or "logger.error" in source
@@ -147,6 +149,7 @@ class TestErrorLogging:
     def test_exception_handler_uses_loguru_logger(self):
         """The exception handler should use the loguru logger, not stdlib logging."""
         import inspect
+
         import app.main as main_module
 
         source = inspect.getsource(main_module)
@@ -156,6 +159,7 @@ class TestErrorLogging:
     def test_no_print_statements_in_main(self):
         """main.py should have no raw print() statements."""
         import inspect
+
         import app.main as main_module
         source = inspect.getsource(main_module)
         # Simple check: no standalone print( calls
