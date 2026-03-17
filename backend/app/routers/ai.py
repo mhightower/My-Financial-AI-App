@@ -1,5 +1,9 @@
+import logging
+
 import anthropic as anthropic_sdk
 from fastapi import APIRouter, HTTPException, status
+
+logger = logging.getLogger(__name__)
 from ..schemas import (
     AnalyzeThesisRequest,
     AnalyzeThesisResponse,
@@ -56,7 +60,7 @@ async def draft_thesis(body: DraftThesisRequest):
     try:
         fundamentals = await alpha_vantage.get_overview(body.ticker)
     except Exception:
-        pass
+        logger.exception("Could not fetch overview for %s, trying quote fallback", body.ticker)
 
     if fundamentals is None:
         # Fall back to basic quote data wrapped in a compatible object
@@ -75,7 +79,7 @@ async def draft_thesis(body: DraftThesisRequest):
                 "week_52_low": None,
             })()
         except Exception:
-            pass
+            logger.exception("Could not fetch quote for %s, using ticker stub", body.ticker)
 
     if fundamentals is None:
         # Last resort: stub with just the ticker — AI will write a general thesis
