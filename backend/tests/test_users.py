@@ -1,5 +1,3 @@
-import pytest
-from app.schemas import UserCreate, UserResponse
 
 
 def test_create_user(client):

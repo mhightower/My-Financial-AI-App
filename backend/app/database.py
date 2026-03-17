@@ -1,6 +1,7 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
 import os
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 # Use environment variable or default to SQLite
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./financial.db")

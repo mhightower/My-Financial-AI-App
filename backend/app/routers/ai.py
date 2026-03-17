@@ -3,14 +3,15 @@ import logging
 import anthropic as anthropic_sdk
 from fastapi import APIRouter, HTTPException, status
 
-logger = logging.getLogger(__name__)
 from ..schemas import (
     AnalyzeThesisRequest,
     AnalyzeThesisResponse,
     DraftThesisRequest,
     DraftThesisResponse,
 )
-from ..services import alpha_vantage, ai_service
+from ..services import ai_service, alpha_vantage
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/ai", tags=["ai"])
 

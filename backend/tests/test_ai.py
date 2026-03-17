@@ -1,6 +1,4 @@
-import pytest
-from unittest.mock import patch, AsyncMock
-
+from unittest.mock import AsyncMock, patch
 
 MOCK_FUNDAMENTALS = type("F", (), {
     "ticker": "NVDA", "company_name": "NVIDIA", "current_price": 800.0,
@@ -105,6 +103,7 @@ def test_draft_thesis_falls_back_when_fundamentals_unavailable(client):
 def test_analyze_thesis_502_on_ai_failure(client):
     """analyze-thesis returns 502 when AI service raises an exception"""
     from unittest.mock import MagicMock
+
     import anthropic
     fake_request = MagicMock()
     with patch("app.services.alpha_vantage.get_overview", AsyncMock(return_value=MOCK_FUNDAMENTALS)), \
@@ -121,6 +120,7 @@ def test_analyze_thesis_502_on_ai_failure(client):
 def test_draft_thesis_502_on_ai_failure(client):
     """draft-thesis returns 502 when AI service raises an exception"""
     from unittest.mock import MagicMock
+
     import anthropic
     fake_request = MagicMock()
     with patch("app.services.alpha_vantage.get_overview", AsyncMock(return_value=MOCK_FUNDAMENTALS)), \

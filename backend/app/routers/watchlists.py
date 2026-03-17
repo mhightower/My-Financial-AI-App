@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List
+
 from ..database import get_db
-from ..models import User, Watchlist, StockInWatchlist
+from ..models import StockInWatchlist, User, Watchlist
 from ..schemas import (
-    WatchlistCreate,
-    WatchlistUpdate,
-    WatchlistResponse,
-    WatchlistDetailResponse,
     StockInWatchlistCreate,
-    StockInWatchlistUpdate,
     StockInWatchlistResponse,
+    StockInWatchlistUpdate,
+    WatchlistCreate,
+    WatchlistDetailResponse,
+    WatchlistResponse,
+    WatchlistUpdate,
 )
 
 router = APIRouter(prefix="/api/v1/watchlists", tags=["watchlists"])

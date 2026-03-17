@@ -1,8 +1,10 @@
-import httpx
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any, List
-from ..schemas import StockQuoteResponse, StockDetailResponse, StockSearchResult, StockHistoryPoint
+from typing import Any, Dict, List, Optional
+
+import httpx
+
+from ..schemas import StockDetailResponse, StockHistoryPoint, StockQuoteResponse, StockSearchResult
 
 API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY", "demo")
 BASE_URL = "https://www.alphavantage.co/query"

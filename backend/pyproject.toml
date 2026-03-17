@@ -21,8 +21,18 @@ dev = [
     "pytest-asyncio==0.21.1",
     "httpx==0.25.2",
     "alembic>=1.16.5",
+    "ruff>=0.4.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+exclude = ["alembic/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
 from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from ..database import get_db
-from ..models import User, BrokerageAccount, SellTransaction
+from ..models import BrokerageAccount, SellTransaction, User
 from ..schemas import (
     SellTransactionCreate,
-    SellTransactionUpdate,
     SellTransactionResponse,
+    SellTransactionUpdate,
 )
 
 router = APIRouter(prefix="/api/v1/sell-transactions", tags=["sell-transactions"])

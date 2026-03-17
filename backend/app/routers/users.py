@@ -1,10 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
 from ..database import get_db
 from ..models import User, Watchlist
-from ..schemas import UserCreate, UserUpdate, UserResponse, UserDetailResponse, WatchlistResponse, WatchlistDetailResponse
+from ..schemas import (
+    UserCreate,
+    UserDetailResponse,
+    UserResponse,
+    UserUpdate,
+    WatchlistDetailResponse,
+)
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 

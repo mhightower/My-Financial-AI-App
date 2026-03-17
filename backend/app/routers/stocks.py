@@ -1,15 +1,16 @@
 import logging
+from typing import List
 
 import httpx
 from fastapi import APIRouter, HTTPException, status
-from typing import List, Optional
-from ..services import alpha_vantage
+
 from ..schemas import (
-    StockSearchResult,
-    StockQuoteResponse,
     StockDetailResponse,
     StockHistoryPoint,
+    StockQuoteResponse,
+    StockSearchResult,
 )
+from ..services import alpha_vantage
 
 logger = logging.getLogger(__name__)
 

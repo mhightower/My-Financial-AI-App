@@ -1,7 +1,7 @@
 # Load environment variables from .env file BEFORE importing anything else
 import logging
-import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load .env file from the backend directory
@@ -9,12 +9,13 @@ backend_dir = Path(__file__).parent.parent
 env_file = backend_dir / ".env"
 load_dotenv(env_file)
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from app.database import engine, Base
-from app.routers import users, watchlists, holdings, stocks, sell_transactions, ai
+from fastapi import FastAPI, Request  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
+from pydantic import BaseModel  # noqa: E402
+
+from app.database import Base, engine  # noqa: E402
+from app.routers import ai, holdings, sell_transactions, stocks, users, watchlists  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

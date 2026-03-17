@@ -1,19 +1,21 @@
 import asyncio
 from datetime import datetime, timezone
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List
+
 from ..database import get_db
-from ..models import User, BrokerageAccount, Holding
+from ..models import BrokerageAccount, Holding, User
 from ..schemas import (
     BrokerageAccountCreate,
-    BrokerageAccountUpdate,
     BrokerageAccountResponse,
+    BrokerageAccountUpdate,
     HoldingCreate,
-    HoldingUpdate,
-    HoldingResponse,
     HoldingPerformanceItem,
     HoldingPerformanceResponse,
+    HoldingResponse,
+    HoldingUpdate,
 )
 from ..services import alpha_vantage
 
