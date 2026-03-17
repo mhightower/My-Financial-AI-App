@@ -22,6 +22,7 @@ def _handle_alpha_vantage_errors(
 ) -> None:
     """Re-raise Alpha Vantage errors as appropriate HTTP exceptions."""
     if isinstance(exc, ValueError):
+        logger.warning("ValueError during %s: %s", context, exc)
         raise HTTPException(status_code=value_error_status, detail=str(exc))
     if isinstance(exc, httpx.HTTPStatusError):
         logger.error("Alpha Vantage HTTP error on %s: %s", context, exc)

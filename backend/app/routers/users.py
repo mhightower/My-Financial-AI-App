@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..logger import logger
 from ..models import User, Watchlist
 from ..schemas import (
     UserCreate,
@@ -24,8 +25,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     try:
         db.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         db.rollback()
+        logger.warning("IntegrityError creating user name=%r: %s", user.name, exc)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this name already exists"
@@ -70,8 +72,9 @@ def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get
 
     try:
         db.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         db.rollback()
+        logger.warning("IntegrityError updating user id=%d name=%r: %s", user_id, user_update.name, exc)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this name already exists"

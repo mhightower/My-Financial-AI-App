@@ -1,8 +1,7 @@
-import logging
-
 import anthropic as anthropic_sdk
 from fastapi import APIRouter, HTTPException, status
 
+from ..logger import logger
 from ..schemas import (
     AnalyzeThesisRequest,
     AnalyzeThesisResponse,
@@ -10,8 +9,6 @@ from ..schemas import (
     DraftThesisResponse,
 )
 from ..services import ai_service, alpha_vantage
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/ai", tags=["ai"])
 
@@ -32,7 +29,8 @@ async def analyze_thesis(body: AnalyzeThesisRequest):
 
     try:
         fundamentals = await alpha_vantage.get_overview(body.ticker)
-    except ValueError:
+    except ValueError as exc:
+        logger.warning("Could not fetch fundamentals for %s: %s", body.ticker, exc)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Could not fetch fundamentals for {body.ticker}"
@@ -46,7 +44,8 @@ async def analyze_thesis(body: AnalyzeThesisRequest):
             fundamentals=fundamentals,
         )
         return AnalyzeThesisResponse(**result)
-    except anthropic_sdk.APIError:
+    except anthropic_sdk.APIError as exc:
+        logger.error("Anthropic API error during thesis analysis for %s: %s", body.ticker, exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="AI analysis temporarily unavailable"
@@ -103,7 +102,8 @@ async def draft_thesis(body: DraftThesisRequest):
             fundamentals=fundamentals,
         )
         return DraftThesisResponse(**result)
-    except anthropic_sdk.APIError:
+    except anthropic_sdk.APIError as exc:
+        logger.error("Anthropic API error during thesis draft for %s: %s", body.ticker, exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="AI service temporarily unavailable"
