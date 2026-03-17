@@ -82,29 +82,29 @@ export const useHoldingsStore = defineStore('holdings', () => {
     }
   }
 
-  const deleteHolding = async (id) => {
+  const deleteHolding = async (id, userId) => {
     try {
-      await api.holdings.delete(id)
+      await api.holdings.delete(id, userId)
       holdings.value = holdings.value.filter(h => h.id !== id)
     } catch (err) {
       error.value = err.message
     }
   }
 
-  const deleteAccount = async (id) => {
+  const deleteAccount = async (id, userId) => {
     try {
-      await api.accounts.delete(id)
+      await api.accounts.delete(id, userId)
       accounts.value = accounts.value.filter(a => a.id !== id)
     } catch (err) {
       error.value = err.message
     }
   }
 
-  const updateAccount = async (id, accountData) => {
+  const updateAccount = async (id, accountData, userId) => {
     loading.value = true
     error.value = null
     try {
-      const response = await api.accounts.update(id, accountData)
+      const response = await api.accounts.update(id, accountData, userId)
       const index = accounts.value.findIndex(a => a.id === id)
       if (index !== -1) {
         accounts.value[index] = response.data
@@ -118,11 +118,11 @@ export const useHoldingsStore = defineStore('holdings', () => {
     }
   }
 
-  const updateHolding = async (id, holdingData) => {
+  const updateHolding = async (id, holdingData, userId) => {
     loading.value = true
     error.value = null
     try {
-      const response = await api.holdings.update(id, holdingData)
+      const response = await api.holdings.update(id, holdingData, userId)
       const index = holdings.value.findIndex(h => h.id === id)
       if (index !== -1) {
         holdings.value[index] = response.data
@@ -165,9 +165,9 @@ export const useHoldingsStore = defineStore('holdings', () => {
     }
   }
 
-  const deleteSellTransaction = async (id) => {
+  const deleteSellTransaction = async (id, userId) => {
     try {
-      await api.sellTransactions.delete(id)
+      await api.sellTransactions.delete(id, userId)
       sellTransactions.value = sellTransactions.value.filter(t => t.id !== id)
     } catch (err) {
       error.value = err.message

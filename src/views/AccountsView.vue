@@ -133,7 +133,7 @@ const saveAccount = async () => {
 
   try {
     if (editingId.value) {
-      await holdingsStore.updateAccount(editingId.value, formData.value)
+      await holdingsStore.updateAccount(editingId.value, formData.value, currentUser.value.id)
     } else {
       await holdingsStore.createAccount(currentUser.value.id, formData.value)
     }
@@ -147,7 +147,7 @@ const saveAccount = async () => {
 
 const deleteAccountConfirm = (id) => {
   if (confirm('Delete this account? This cannot be undone.')) {
-    holdingsStore.deleteAccount(id)
+    holdingsStore.deleteAccount(id, currentUser.value.id)
   }
 }
 </script>

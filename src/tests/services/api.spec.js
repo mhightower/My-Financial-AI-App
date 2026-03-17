@@ -76,22 +76,34 @@ describe('API Service', () => {
       expect(mockApi.post).toHaveBeenCalledWith('/watchlists?user_id=1', { name: 'Growth' })
     })
 
-    it('addStock calls POST on watchlist stocks', async () => {
+    it('addStock calls POST on watchlist stocks with user_id param', async () => {
       mockApi.post.mockResolvedValue({ data: {} })
-      await watchlists.addStock(1, { ticker: 'AAPL' })
-      expect(mockApi.post).toHaveBeenCalledWith('/watchlists/1/stocks', { ticker: 'AAPL' })
+      await watchlists.addStock(1, { ticker: 'AAPL' }, 42)
+      expect(mockApi.post).toHaveBeenCalledWith('/watchlists/1/stocks', { ticker: 'AAPL' }, { params: { user_id: 42 } })
     })
 
-    it('removeStock calls DELETE', async () => {
+    it('removeStock calls DELETE with user_id param', async () => {
       mockApi.delete.mockResolvedValue({})
-      await watchlists.removeStock(1, 10)
-      expect(mockApi.delete).toHaveBeenCalledWith('/watchlists/1/stocks/10')
+      await watchlists.removeStock(1, 10, 42)
+      expect(mockApi.delete).toHaveBeenCalledWith('/watchlists/1/stocks/10', { params: { user_id: 42 } })
     })
 
-    it('updateStock calls PUT', async () => {
+    it('updateStock calls PUT with user_id param', async () => {
       mockApi.put.mockResolvedValue({ data: {} })
-      await watchlists.updateStock(1, 10, { buy_price: 150 })
-      expect(mockApi.put).toHaveBeenCalledWith('/watchlists/1/stocks/10', { buy_price: 150 })
+      await watchlists.updateStock(1, 10, { buy_price: 150 }, 42)
+      expect(mockApi.put).toHaveBeenCalledWith('/watchlists/1/stocks/10', { buy_price: 150 }, { params: { user_id: 42 } })
+    })
+
+    it('update calls PUT with user_id param', async () => {
+      mockApi.put.mockResolvedValue({ data: {} })
+      await watchlists.update(5, { name: 'Updated' }, 42)
+      expect(mockApi.put).toHaveBeenCalledWith('/watchlists/5', { name: 'Updated' }, { params: { user_id: 42 } })
+    })
+
+    it('delete calls DELETE with user_id param', async () => {
+      mockApi.delete.mockResolvedValue({})
+      await watchlists.delete(5, 42)
+      expect(mockApi.delete).toHaveBeenCalledWith('/watchlists/5', { params: { user_id: 42 } })
     })
   })
 
@@ -107,6 +119,18 @@ describe('API Service', () => {
       await accounts.create(1, { name: 'Fidelity' })
       expect(mockApi.post).toHaveBeenCalledWith('/accounts?user_id=1', { name: 'Fidelity' })
     })
+
+    it('update calls PUT with user_id param', async () => {
+      mockApi.put.mockResolvedValue({ data: {} })
+      await accounts.update(3, { name: 'New Name' }, 42)
+      expect(mockApi.put).toHaveBeenCalledWith('/accounts/3', { name: 'New Name' }, { params: { user_id: 42 } })
+    })
+
+    it('delete calls DELETE with user_id param', async () => {
+      mockApi.delete.mockResolvedValue({})
+      await accounts.delete(3, 42)
+      expect(mockApi.delete).toHaveBeenCalledWith('/accounts/3', { params: { user_id: 42 } })
+    })
   })
 
   describe('holdings', () => {
@@ -120,6 +144,18 @@ describe('API Service', () => {
       mockApi.post.mockResolvedValue({ data: {} })
       await holdings.create(1, { ticker: 'AAPL' })
       expect(mockApi.post).toHaveBeenCalledWith('/holdings?user_id=1', { ticker: 'AAPL' })
+    })
+
+    it('update calls PUT with user_id param', async () => {
+      mockApi.put.mockResolvedValue({ data: {} })
+      await holdings.update(7, { quantity: 5 }, 42)
+      expect(mockApi.put).toHaveBeenCalledWith('/holdings/7', { quantity: 5 }, { params: { user_id: 42 } })
+    })
+
+    it('delete calls DELETE with user_id param', async () => {
+      mockApi.delete.mockResolvedValue({})
+      await holdings.delete(7, 42)
+      expect(mockApi.delete).toHaveBeenCalledWith('/holdings/7', { params: { user_id: 42 } })
     })
   })
 

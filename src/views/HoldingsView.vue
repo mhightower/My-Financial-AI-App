@@ -310,7 +310,7 @@ const closePosition = async () => {
       price_received: sellForm.value.price_received,
       notes: sellForm.value.notes
     })
-    await holdingsStore.deleteHolding(sellForm.value.holding_id)
+    await holdingsStore.deleteHolding(sellForm.value.holding_id, currentUser.value.id)
     closeSellModal()
   } catch (err) {
     error.value = 'Failed to record sale'
@@ -321,7 +321,7 @@ const closePosition = async () => {
 
 const deleteHoldingConfirm = (id) => {
   if (confirm('Delete this holding?')) {
-    holdingsStore.deleteHolding(id)
+    holdingsStore.deleteHolding(id, currentUser.value.id)
   }
 }
 

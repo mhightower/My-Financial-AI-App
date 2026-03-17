@@ -194,12 +194,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWatchlistsStore } from '../stores/watchlists'
+import { useUserStore } from '../stores/user'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import * as api from '../services/api'
 
 const route = useRoute()
 const watchlistsStore = useWatchlistsStore()
+const userStore = useUserStore()
 const watchlist = computed(() => watchlistsStore.currentWatchlist)
+const currentUser = computed(() => userStore.currentUser)
 
 const showAddModal = ref(false)
 const loading = ref(false)
@@ -355,7 +358,7 @@ const addStock = async () => {
       stop_loss_pct: addForm.value.stop_loss_pct ? addForm.value.stop_loss_pct / 100 : null
     }
 
-    await watchlistsStore.addStockToWatchlist(watchlist.value.id, stockData)
+    await watchlistsStore.addStockToWatchlist(watchlist.value.id, stockData, currentUser.value?.id)
     closeAddModal()
   } catch (err) {
     error.value = 'Failed to add stock: ' + (err.response?.data?.detail || err.message)
@@ -372,7 +375,7 @@ const removeStockConfirm = (stockId) => {
 
 const removeStock = async (stockId) => {
   try {
-    await watchlistsStore.removeStockFromWatchlist(watchlist.value.id, stockId)
+    await watchlistsStore.removeStockFromWatchlist(watchlist.value.id, stockId, currentUser.value?.id)
   } catch (err) {
     error.value = 'Failed to remove stock'
   }

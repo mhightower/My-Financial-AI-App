@@ -52,11 +52,11 @@ export const useWatchlistsStore = defineStore('watchlists', () => {
     }
   }
 
-  const deleteWatchlist = async (id) => {
+  const deleteWatchlist = async (id, userId) => {
     loading.value = true
     error.value = null
     try {
-      await api.watchlists.delete(id)
+      await api.watchlists.delete(id, userId)
       watchlists.value = watchlists.value.filter(w => w.id !== id)
       if (currentWatchlist.value?.id === id) {
         currentWatchlist.value = null
@@ -68,9 +68,9 @@ export const useWatchlistsStore = defineStore('watchlists', () => {
     }
   }
 
-  const addStockToWatchlist = async (watchlistId, stockData) => {
+  const addStockToWatchlist = async (watchlistId, stockData, userId) => {
     try {
-      const response = await api.watchlists.addStock(watchlistId, stockData)
+      const response = await api.watchlists.addStock(watchlistId, stockData, userId)
       if (currentWatchlist.value?.id === watchlistId) {
         currentWatchlist.value.stocks.push(response.data)
       }
@@ -81,9 +81,9 @@ export const useWatchlistsStore = defineStore('watchlists', () => {
     }
   }
 
-  const removeStockFromWatchlist = async (watchlistId, stockId) => {
+  const removeStockFromWatchlist = async (watchlistId, stockId, userId) => {
     try {
-      await api.watchlists.removeStock(watchlistId, stockId)
+      await api.watchlists.removeStock(watchlistId, stockId, userId)
       if (currentWatchlist.value?.id === watchlistId) {
         currentWatchlist.value.stocks = currentWatchlist.value.stocks.filter(s => s.id !== stockId)
       }
@@ -92,11 +92,11 @@ export const useWatchlistsStore = defineStore('watchlists', () => {
     }
   }
 
-  const updateWatchlist = async (id, data) => {
+  const updateWatchlist = async (id, data, userId) => {
     loading.value = true
     error.value = null
     try {
-      const response = await api.watchlists.update(id, data)
+      const response = await api.watchlists.update(id, data, userId)
       const index = watchlists.value.findIndex(w => w.id === id)
       if (index !== -1) {
         watchlists.value[index] = response.data
@@ -113,9 +113,9 @@ export const useWatchlistsStore = defineStore('watchlists', () => {
     }
   }
 
-  const updateStockInWatchlist = async (watchlistId, stockId, data) => {
+  const updateStockInWatchlist = async (watchlistId, stockId, data, userId) => {
     try {
-      const response = await api.watchlists.updateStock(watchlistId, stockId, data)
+      const response = await api.watchlists.updateStock(watchlistId, stockId, data, userId)
       if (currentWatchlist.value?.id === watchlistId) {
         const index = currentWatchlist.value.stocks.findIndex(s => s.id === stockId)
         if (index !== -1) {

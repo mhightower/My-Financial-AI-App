@@ -22,13 +22,13 @@ export const watchlists = {
   list: (userId) => api.get(`/users/${userId}/watchlists`),
   get: (id) => api.get(`/watchlists/${id}`),
   create: (userId, data) => api.post(`/watchlists?user_id=${userId}`, data),
-  update: (id, data) => api.put(`/watchlists/${id}`, data),
-  delete: (id) => api.delete(`/watchlists/${id}`),
+  update: (id, data, userId) => api.put(`/watchlists/${id}`, data, { params: { user_id: userId } }),
+  delete: (id, userId) => api.delete(`/watchlists/${id}`, { params: { user_id: userId } }),
 
   // Stocks in watchlist
-  addStock: (watchlistId, data) => api.post(`/watchlists/${watchlistId}/stocks`, data),
-  updateStock: (watchlistId, stockId, data) => api.put(`/watchlists/${watchlistId}/stocks/${stockId}`, data),
-  removeStock: (watchlistId, stockId) => api.delete(`/watchlists/${watchlistId}/stocks/${stockId}`)
+  addStock: (watchlistId, data, userId) => api.post(`/watchlists/${watchlistId}/stocks`, data, { params: { user_id: userId } }),
+  updateStock: (watchlistId, stockId, data, userId) => api.put(`/watchlists/${watchlistId}/stocks/${stockId}`, data, { params: { user_id: userId } }),
+  removeStock: (watchlistId, stockId, userId) => api.delete(`/watchlists/${watchlistId}/stocks/${stockId}`, { params: { user_id: userId } })
 }
 
 // Brokerage account endpoints
@@ -36,8 +36,8 @@ export const accounts = {
   list: (userId) => api.get(`/users/${userId}/accounts`),
   get: (id) => api.get(`/accounts/${id}`),
   create: (userId, data) => api.post(`/accounts?user_id=${userId}`, data),
-  update: (id, data) => api.put(`/accounts/${id}`, data),
-  delete: (id) => api.delete(`/accounts/${id}`)
+  update: (id, data, userId) => api.put(`/accounts/${id}`, data, { params: { user_id: userId } }),
+  delete: (id, userId) => api.delete(`/accounts/${id}`, { params: { user_id: userId } })
 }
 
 // Holdings endpoints
@@ -46,8 +46,8 @@ export const holdings = {
   getPerformance: (userId) => api.get(`/users/${userId}/holdings-performance`),
   get: (id) => api.get(`/holdings/${id}`),
   create: (userId, data) => api.post(`/holdings?user_id=${userId}`, data),
-  update: (id, data) => api.put(`/holdings/${id}`, data),
-  delete: (id) => api.delete(`/holdings/${id}`)
+  update: (id, data, userId) => api.put(`/holdings/${id}`, data, { params: { user_id: userId } }),
+  delete: (id, userId) => api.delete(`/holdings/${id}`, { params: { user_id: userId } })
 }
 
 // Stock endpoints
@@ -63,8 +63,8 @@ export const sellTransactions = {
   list: (userId) => api.get(`/sell-transactions/users/${userId}/transactions`),
   get: (id) => api.get(`/sell-transactions/${id}`),
   create: (userId, data) => api.post(`/sell-transactions?user_id=${userId}`, data),
-  update: (id, data) => api.put(`/sell-transactions/${id}`, data),
-  delete: (id) => api.delete(`/sell-transactions/${id}`)
+  update: (id, data, userId) => api.put(`/sell-transactions/${id}`, data, { params: { user_id: userId } }),
+  delete: (id, userId) => api.delete(`/sell-transactions/${id}`, { params: { user_id: userId } })
 }
 
 // AI endpoints

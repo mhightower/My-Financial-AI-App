@@ -118,7 +118,7 @@ const saveWatchlist = async () => {
 
   try {
     if (editingId.value) {
-      await watchlistsStore.updateWatchlist(editingId.value, formData.value)
+      await watchlistsStore.updateWatchlist(editingId.value, formData.value, currentUser.value.id)
     } else {
       await watchlistsStore.createWatchlist(currentUser.value.id, formData.value)
     }
@@ -138,7 +138,7 @@ const deleteWatchlistConfirm = (id) => {
 
 const deleteWatchlist = async (id) => {
   try {
-    await watchlistsStore.deleteWatchlist(id)
+    await watchlistsStore.deleteWatchlist(id, currentUser.value.id)
   } catch (err) {
     error.value = 'Failed to delete watchlist'
   }

@@ -267,7 +267,7 @@ describe('WatchlistDetailView', () => {
     const removeBtn = wrapper.find('.icon-btn.danger')
     await removeBtn.trigger('click')
 
-    expect(store.removeStockFromWatchlist).toHaveBeenCalledWith(1, MOCK_STOCK.id)
+    expect(store.removeStockFromWatchlist).toHaveBeenCalledWith(1, MOCK_STOCK.id, undefined)
     vi.unstubAllGlobals()
   })
 })
