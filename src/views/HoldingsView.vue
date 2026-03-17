@@ -196,6 +196,13 @@
         </form>
       </div>
     </div>
+
+    <ConfirmModal
+      v-model="showDeleteConfirm"
+      title="Delete Holding"
+      message="Delete this holding?"
+      @confirm="holdingsStore.deleteHolding(pendingDeleteId, currentUser.id)"
+    />
   </div>
 </template>
 
@@ -204,6 +211,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useHoldingsStore } from '../stores/holdings'
 import { useFocusTrap } from '../composables/useFocusTrap'
+import ConfirmModal from '../components/ConfirmModal.vue'
 
 const userStore = useUserStore()
 const holdingsStore = useHoldingsStore()
@@ -319,10 +327,12 @@ const closePosition = async () => {
   }
 }
 
+const showDeleteConfirm = ref(false)
+const pendingDeleteId = ref(null)
+
 const deleteHoldingConfirm = (id) => {
-  if (confirm('Delete this holding?')) {
-    holdingsStore.deleteHolding(id, currentUser.value.id)
-  }
+  pendingDeleteId.value = id
+  showDeleteConfirm.value = true
 }
 
 onMounted(async () => {

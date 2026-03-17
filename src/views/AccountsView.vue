@@ -69,6 +69,13 @@
         <p style="margin-top:0.5rem; font-size:0.8rem;">Add a brokerage account to track holdings by account type.</p>
       </div>
     </template>
+
+    <ConfirmModal
+      v-model="showDeleteConfirm"
+      title="Delete Account"
+      message="Delete this account? This cannot be undone."
+      @confirm="holdingsStore.deleteAccount(pendingDeleteId, currentUser.id)"
+    />
   </div>
 </template>
 
@@ -76,6 +83,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useHoldingsStore } from '../stores/holdings'
+import ConfirmModal from '../components/ConfirmModal.vue'
 
 const userStore = useUserStore()
 const holdingsStore = useHoldingsStore()
@@ -145,10 +153,12 @@ const saveAccount = async () => {
   }
 }
 
+const showDeleteConfirm = ref(false)
+const pendingDeleteId = ref(null)
+
 const deleteAccountConfirm = (id) => {
-  if (confirm('Delete this account? This cannot be undone.')) {
-    holdingsStore.deleteAccount(id, currentUser.value.id)
-  }
+  pendingDeleteId.value = id
+  showDeleteConfirm.value = true
 }
 </script>
 

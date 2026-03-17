@@ -90,6 +90,13 @@
         <div v-if="error" class="error-msg">{{ error }}</div>
       </div>
     </div>
+
+    <ConfirmModal
+      v-model="showDeleteConfirm"
+      title="Delete User"
+      message="Delete this user and all their data?"
+      @confirm="deleteUser(pendingDeleteUserId)"
+    />
   </div>
 </template>
 
@@ -97,6 +104,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useFocusTrap } from '../composables/useFocusTrap'
+import ConfirmModal from './ConfirmModal.vue'
 
 const AVATAR_COLORS = [
   '#D99D38',
@@ -178,10 +186,12 @@ const createNewUser = async () => {
   loading.value = false
 }
 
+const showDeleteConfirm = ref(false)
+const pendingDeleteUserId = ref(null)
+
 const deleteUserConfirm = (userId) => {
-  if (confirm('Delete this user and all their data?')) {
-    deleteUser(userId)
-  }
+  pendingDeleteUserId.value = userId
+  showDeleteConfirm.value = true
 }
 
 const deleteUser = async (userId) => {

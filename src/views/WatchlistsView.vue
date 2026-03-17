@@ -60,6 +60,13 @@
         </form>
       </div>
     </div>
+
+    <ConfirmModal
+      v-model="showDeleteConfirm"
+      title="Delete Watchlist"
+      message="Delete this watchlist? This cannot be undone."
+      @confirm="deleteWatchlist(pendingDeleteId)"
+    />
   </div>
 </template>
 
@@ -68,6 +75,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useWatchlistsStore } from '../stores/watchlists'
 import { useFocusTrap } from '../composables/useFocusTrap'
+import ConfirmModal from '../components/ConfirmModal.vue'
 
 const userStore = useUserStore()
 const watchlistsStore = useWatchlistsStore()
@@ -130,10 +138,12 @@ const saveWatchlist = async () => {
   }
 }
 
+const showDeleteConfirm = ref(false)
+const pendingDeleteId = ref(null)
+
 const deleteWatchlistConfirm = (id) => {
-  if (confirm('Delete this watchlist? This cannot be undone.')) {
-    deleteWatchlist(id)
-  }
+  pendingDeleteId.value = id
+  showDeleteConfirm.value = true
 }
 
 const deleteWatchlist = async (id) => {

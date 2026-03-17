@@ -258,16 +258,19 @@ describe('WatchlistDetailView', () => {
   // --- Remove stock ---
 
   it('remove button calls removeStockFromWatchlist after confirm', async () => {
-    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
-
     const wrapper = await mountView({ ...MOCK_WATCHLIST_EMPTY, stocks: [MOCK_STOCK] })
     const store = useWatchlistsStore()
     store.removeStockFromWatchlist = vi.fn().mockResolvedValue(undefined)
 
+    // Click remove — this opens the ConfirmModal
     const removeBtn = wrapper.find('.icon-btn.danger')
     await removeBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    // Click the confirm button inside ConfirmModal
+    const confirmBtn = wrapper.find('.btn.btn-danger')
+    await confirmBtn.trigger('click')
 
     expect(store.removeStockFromWatchlist).toHaveBeenCalledWith(1, MOCK_STOCK.id, undefined)
-    vi.unstubAllGlobals()
   })
 })

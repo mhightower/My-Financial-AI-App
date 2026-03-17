@@ -188,6 +188,14 @@
         </form>
       </div>
     </div>
+
+    <ConfirmModal
+      v-model="showRemoveConfirm"
+      title="Remove Stock"
+      message="Remove this stock from the watchlist?"
+      confirmLabel="Remove"
+      @confirm="removeStock(pendingRemoveStockId)"
+    />
   </div>
 </template>
 
@@ -199,6 +207,7 @@ import { useUserStore } from '../stores/user'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { useDebounce } from '../composables/useDebounce'
 import { useAIThesis } from '../composables/useAIThesis'
+import ConfirmModal from '../components/ConfirmModal.vue'
 import * as api from '../services/api'
 
 const route = useRoute()
@@ -329,10 +338,12 @@ const addStock = async () => {
   }
 }
 
+const showRemoveConfirm = ref(false)
+const pendingRemoveStockId = ref(null)
+
 const removeStockConfirm = (stockId) => {
-  if (confirm('Remove this stock from the watchlist?')) {
-    removeStock(stockId)
-  }
+  pendingRemoveStockId.value = stockId
+  showRemoveConfirm.value = true
 }
 
 const removeStock = async (stockId) => {
