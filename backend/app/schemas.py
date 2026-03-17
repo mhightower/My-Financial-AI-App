@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from datetime import datetime
 from typing import Optional, List
 
@@ -58,14 +58,19 @@ class HoldingCreate(BaseModel):
     user_id: int
     account_id: int
     ticker: str
-    quantity: float
-    entry_price: float
+    quantity: float = Field(..., gt=0)
+    entry_price: float = Field(..., gt=0)
     notes: Optional[str] = None
+
+    @field_validator("ticker")
+    @classmethod
+    def uppercase_ticker(cls, v: str) -> str:
+        return v.upper().strip()
 
 
 class HoldingUpdate(BaseModel):
-    quantity: Optional[float] = None
-    entry_price: Optional[float] = None
+    quantity: Optional[float] = Field(None, gt=0)
+    entry_price: Optional[float] = Field(None, gt=0)
     notes: Optional[str] = None
 
 
@@ -87,17 +92,22 @@ class StockInWatchlistCreate(BaseModel):
     ticker: str
     buy_reasons: Optional[str] = None
     sell_conditions: Optional[str] = None
-    buy_price: Optional[float] = None
-    sell_price: Optional[float] = None
-    stop_loss_pct: Optional[float] = None
+    buy_price: Optional[float] = Field(None, gt=0)
+    sell_price: Optional[float] = Field(None, gt=0)
+    stop_loss_pct: Optional[float] = Field(None, ge=0, le=1)
+
+    @field_validator("ticker")
+    @classmethod
+    def uppercase_ticker(cls, v: str) -> str:
+        return v.upper().strip()
 
 
 class StockInWatchlistUpdate(BaseModel):
     buy_reasons: Optional[str] = None
     sell_conditions: Optional[str] = None
-    buy_price: Optional[float] = None
-    sell_price: Optional[float] = None
-    stop_loss_pct: Optional[float] = None
+    buy_price: Optional[float] = Field(None, gt=0)
+    sell_price: Optional[float] = Field(None, gt=0)
+    stop_loss_pct: Optional[float] = Field(None, ge=0, le=1)
 
 
 class StockInWatchlistResponse(BaseModel):

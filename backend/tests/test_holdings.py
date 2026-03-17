@@ -94,7 +94,7 @@ def test_log_buy_trade(client, test_user, test_account):
 
 def test_holding_validation(client, test_user, test_account):
     """Test that holdings validate quantity and price"""
-    # Zero quantity should fail
+    # Zero quantity should fail (now caught by Pydantic Field gt=0)
     response = client.post(
         "/api/v1/holdings",
         json={
@@ -105,9 +105,9 @@ def test_holding_validation(client, test_user, test_account):
             "entry_price": 100.0
         }
     )
-    assert response.status_code == 400
+    assert response.status_code in [400, 422]
 
-    # Zero price should fail
+    # Zero price should fail (now caught by Pydantic Field gt=0)
     response = client.post(
         "/api/v1/holdings",
         json={
@@ -118,7 +118,7 @@ def test_holding_validation(client, test_user, test_account):
             "entry_price": 0
         }
     )
-    assert response.status_code == 400
+    assert response.status_code in [400, 422]
 
 
 def test_get_holding(client, test_user, test_account):

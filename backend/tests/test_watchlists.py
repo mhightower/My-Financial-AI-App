@@ -72,7 +72,7 @@ def test_add_stock_to_watchlist(client, test_user):
             "sell_conditions": "Growth slows below 15%",
             "buy_price": 150.0,
             "sell_price": 200.0,
-            "stop_loss_pct": 10.0
+            "stop_loss_pct": 0.10
         }
     )
     assert response.status_code == 201

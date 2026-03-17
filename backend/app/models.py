@@ -28,7 +28,7 @@ class Watchlist(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    owner_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    owner_user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     created_date = Column(DateTime, default=_utc_now, nullable=False)
 
     owner = relationship("User", back_populates="watchlists")
@@ -39,8 +39,8 @@ class StockInWatchlist(Base):
     __tablename__ = "stocks_in_watchlist"
 
     id = Column(Integer, primary_key=True, index=True)
-    watchlist_id = Column(Integer, ForeignKey("watchlists.id"), nullable=False)
-    ticker = Column(String(10), nullable=False)
+    watchlist_id = Column(Integer, ForeignKey("watchlists.id"), nullable=False, index=True)
+    ticker = Column(String(10), nullable=False, index=True)
     buy_reasons = Column(Text, nullable=True)
     sell_conditions = Column(Text, nullable=True)
     buy_price = Column(Float, nullable=True)  # Target buy price
@@ -55,7 +55,7 @@ class BrokerageAccount(Base):
     __tablename__ = "brokerage_accounts"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     account_type = Column(String(50), nullable=False)  # 'taxable', 'IRA', 'Roth', etc.
     broker_name = Column(String(255), nullable=True)
@@ -69,9 +69,9 @@ class Holding(Base):
     __tablename__ = "holdings"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    account_id = Column(Integer, ForeignKey("brokerage_accounts.id"), nullable=False)
-    ticker = Column(String(10), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    account_id = Column(Integer, ForeignKey("brokerage_accounts.id"), nullable=False, index=True)
+    ticker = Column(String(10), nullable=False, index=True)
     quantity = Column(Float, nullable=False)  # Can be fractional for ETFs
     entry_price = Column(Float, nullable=False)
     entry_date = Column(DateTime, default=_utc_now, nullable=False)
@@ -85,9 +85,9 @@ class SellTransaction(Base):
     __tablename__ = "sell_transactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    account_id = Column(Integer, ForeignKey("brokerage_accounts.id"), nullable=False)
-    ticker = Column(String(10), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    account_id = Column(Integer, ForeignKey("brokerage_accounts.id"), nullable=False, index=True)
+    ticker = Column(String(10), nullable=False, index=True)
     shares_sold = Column(Float, nullable=False)
     price_received = Column(Float, nullable=False)
     sell_date = Column(DateTime, default=_utc_now, nullable=False)
