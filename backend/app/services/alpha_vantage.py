@@ -54,7 +54,7 @@ async def search_symbol(keywords: str, limit: int = 10) -> List[StockSearchResul
         "apikey": API_KEY,
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(BASE_URL, params=params)
         response.raise_for_status()
         data = response.json()
@@ -94,7 +94,7 @@ async def get_quote(symbol: str) -> StockQuoteResponse:
         "apikey": API_KEY,
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(BASE_URL, params=params)
         response.raise_for_status()
         data = response.json()
@@ -134,7 +134,7 @@ async def get_overview(symbol: str) -> StockDetailResponse:
         "apikey": API_KEY,
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(BASE_URL, params=params)
         response.raise_for_status()
         overview = response.json()
@@ -173,7 +173,7 @@ async def get_daily_history(symbol: str, days: int = 30) -> List[StockHistoryPoi
         "apikey": API_KEY,
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(BASE_URL, params=params)
         response.raise_for_status()
         data = response.json()

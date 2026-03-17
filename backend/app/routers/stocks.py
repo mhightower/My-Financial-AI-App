@@ -16,6 +16,22 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/stocks", tags=["stocks"])
 
 
+def _handle_alpha_vantage_errors(
+    exc: Exception, context: str, value_error_status: int = status.HTTP_429_TOO_MANY_REQUESTS
+) -> None:
+    """Re-raise Alpha Vantage errors as appropriate HTTP exceptions."""
+    if isinstance(exc, ValueError):
+        raise HTTPException(status_code=value_error_status, detail=str(exc))
+    if isinstance(exc, httpx.HTTPStatusError):
+        logger.error("Alpha Vantage HTTP error on %s: %s", context, exc)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"{context} is temporarily unavailable")
+    if isinstance(exc, httpx.RequestError):
+        logger.error("Alpha Vantage connection error on %s: %s", context, exc)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Unable to connect to stock data provider")
+    logger.exception("Unexpected error during %s: %s", context, exc)
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
+
+
 @router.get("/search", response_model=List[StockSearchResult])
 async def search_stocks(q: str, limit: int = 10):
     """
@@ -32,31 +48,9 @@ async def search_stocks(q: str, limit: int = 10):
         limit = 10
 
     try:
-        results = await alpha_vantage.search_symbol(q, limit)
-        return results
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=str(e)
-        )
-    except httpx.HTTPStatusError as e:
-        logger.error("Alpha Vantage HTTP error on search: %s %s", type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Stock search is temporarily unavailable"
-        )
-    except httpx.RequestError as e:
-        logger.error("Alpha Vantage connection error on search: %s %s", type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Unable to connect to stock data provider"
-        )
+        return await alpha_vantage.search_symbol(q, limit)
     except Exception as e:
-        logger.exception("Unexpected error during stock search: %s %s", type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred"
-        )
+        _handle_alpha_vantage_errors(e, "Stock search")
 
 
 @router.get("/{ticker}/quote", response_model=StockQuoteResponse)
@@ -67,31 +61,9 @@ async def get_stock_quote(ticker: str):
     ticker = ticker.upper()
 
     try:
-        quote = await alpha_vantage.get_quote(ticker)
-        return quote
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-    except httpx.HTTPStatusError as e:
-        logger.error("Alpha Vantage HTTP error on quote for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Stock quote is temporarily unavailable"
-        )
-    except httpx.RequestError as e:
-        logger.error("Alpha Vantage connection error on quote for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Unable to connect to stock data provider"
-        )
+        return await alpha_vantage.get_quote(ticker)
     except Exception as e:
-        logger.exception("Unexpected error fetching quote for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred"
-        )
+        _handle_alpha_vantage_errors(e, f"Quote for {ticker}", status.HTTP_404_NOT_FOUND)
 
 
 @router.get("/{ticker}/detail", response_model=StockDetailResponse)
@@ -102,31 +74,9 @@ async def get_stock_detail(ticker: str):
     ticker = ticker.upper()
 
     try:
-        detail = await alpha_vantage.get_overview(ticker)
-        return detail
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-    except httpx.HTTPStatusError as e:
-        logger.error("Alpha Vantage HTTP error on detail for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Stock detail is temporarily unavailable"
-        )
-    except httpx.RequestError as e:
-        logger.error("Alpha Vantage connection error on detail for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Unable to connect to stock data provider"
-        )
+        return await alpha_vantage.get_overview(ticker)
     except Exception as e:
-        logger.exception("Unexpected error fetching detail for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred"
-        )
+        _handle_alpha_vantage_errors(e, f"Detail for {ticker}", status.HTTP_404_NOT_FOUND)
 
 
 @router.get("/{ticker}/history", response_model=List[StockHistoryPoint])
@@ -140,31 +90,9 @@ async def get_stock_history(ticker: str, days: int = 30):
         days = 30
 
     try:
-        history = await alpha_vantage.get_daily_history(ticker, days)
-        return history
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-    except httpx.HTTPStatusError as e:
-        logger.error("Alpha Vantage HTTP error on history for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Stock history is temporarily unavailable"
-        )
-    except httpx.RequestError as e:
-        logger.error("Alpha Vantage connection error on history for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Unable to connect to stock data provider"
-        )
+        return await alpha_vantage.get_daily_history(ticker, days)
     except Exception as e:
-        logger.exception("Unexpected error fetching history for %s: %s %s", ticker, type(e).__name__, e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred"
-        )
+        _handle_alpha_vantage_errors(e, f"History for {ticker}", status.HTTP_404_NOT_FOUND)
 
 
 @router.get("/health", response_model=dict)
