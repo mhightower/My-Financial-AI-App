@@ -1,9 +1,10 @@
 # Load environment variables from .env file BEFORE importing anything else
-from alembic import command
 import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+from alembic import command
 
 # Load .env file from the backend directory
 backend_dir = Path(__file__).parent.parent
