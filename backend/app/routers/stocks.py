@@ -4,6 +4,7 @@ import httpx
 from fastapi import APIRouter, HTTPException, status
 from loguru import logger
 
+from ..logger import logger
 from ..schemas import (
     StockDetailResponse,
     StockHistoryPoint,
