@@ -1,4 +1,5 @@
 # Load environment variables from .env file BEFORE importing anything else
+from alembic import command
 import time
 from pathlib import Path
 
@@ -15,7 +16,6 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
-from alembic import command
 from app.logger import logger  # noqa: E402
 from app.routers import ai, holdings, sell_transactions, stocks, users, watchlists  # noqa: E402
 
