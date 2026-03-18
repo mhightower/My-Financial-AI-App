@@ -30,7 +30,7 @@ async def analyze_thesis(body: AnalyzeThesisRequest):
     try:
         fundamentals = await alpha_vantage.get_overview(body.ticker)
     except ValueError as exc:
-        logger.warning("Could not fetch fundamentals for %s: %s", body.ticker, exc)
+        logger.warning("Could not fetch fundamentals for {ticker}: {exc}", ticker=body.ticker, exc=exc)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Could not fetch fundamentals for {body.ticker}"
@@ -45,7 +45,7 @@ async def analyze_thesis(body: AnalyzeThesisRequest):
         )
         return AnalyzeThesisResponse(**result)
     except anthropic_sdk.APIError as exc:
-        logger.error("Anthropic API error during thesis analysis for %s: %s", body.ticker, exc)
+        logger.error("Anthropic API error during thesis analysis for {ticker}: {exc}", ticker=body.ticker, exc=exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="AI analysis temporarily unavailable"
@@ -60,7 +60,7 @@ async def draft_thesis(body: DraftThesisRequest):
     try:
         fundamentals = await alpha_vantage.get_overview(body.ticker)
     except Exception:
-        logger.exception("Could not fetch overview for %s, trying quote fallback", body.ticker)
+        logger.exception("Could not fetch overview for {ticker}, trying quote fallback", ticker=body.ticker)
 
     if fundamentals is None:
         # Fall back to basic quote data wrapped in a compatible object
@@ -79,7 +79,7 @@ async def draft_thesis(body: DraftThesisRequest):
                 "week_52_low": None,
             })()
         except Exception:
-            logger.exception("Could not fetch quote for %s, using ticker stub", body.ticker)
+            logger.exception("Could not fetch quote for {ticker}, using ticker stub", ticker=body.ticker)
 
     if fundamentals is None:
         # Last resort: stub with just the ticker — AI will write a general thesis
@@ -103,7 +103,7 @@ async def draft_thesis(body: DraftThesisRequest):
         )
         return DraftThesisResponse(**result)
     except anthropic_sdk.APIError as exc:
-        logger.error("Anthropic API error during thesis draft for %s: %s", body.ticker, exc)
+        logger.error("Anthropic API error during thesis draft for {ticker}: {exc}", ticker=body.ticker, exc=exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="AI service temporarily unavailable"

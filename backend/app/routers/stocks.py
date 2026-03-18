@@ -1,9 +1,9 @@
-import logging
 from typing import List
 
 import httpx
 from fastapi import APIRouter, HTTPException, status
 
+from ..logger import logger
 from ..schemas import (
     StockDetailResponse,
     StockHistoryPoint,
@@ -11,8 +11,6 @@ from ..schemas import (
     StockSearchResult,
 )
 from ..services import alpha_vantage
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/stocks", tags=["stocks"])
 
@@ -22,15 +20,15 @@ def _handle_alpha_vantage_errors(
 ) -> None:
     """Re-raise Alpha Vantage errors as appropriate HTTP exceptions."""
     if isinstance(exc, ValueError):
-        logger.warning("ValueError during %s: %s", context, exc)
+        logger.warning("ValueError during {context}: {exc}", context=context, exc=exc)
         raise HTTPException(status_code=value_error_status, detail=str(exc))
     if isinstance(exc, httpx.HTTPStatusError):
-        logger.error("Alpha Vantage HTTP error on %s: %s", context, exc)
+        logger.error("Alpha Vantage HTTP error on {context}: {exc}", context=context, exc=exc)
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"{context} is temporarily unavailable")
     if isinstance(exc, httpx.RequestError):
-        logger.error("Alpha Vantage connection error on %s: %s", context, exc)
+        logger.error("Alpha Vantage connection error on {context}: {exc}", context=context, exc=exc)
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Unable to connect to stock data provider")
-    logger.exception("Unexpected error during %s: %s", context, exc)
+    logger.exception("Unexpected error during {context}: {exc}", context=context, exc=exc)
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred")
 
 

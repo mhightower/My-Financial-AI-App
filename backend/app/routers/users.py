@@ -27,7 +27,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         db.commit()
     except IntegrityError as exc:
         db.rollback()
-        logger.warning("IntegrityError creating user name=%r: %s", user.name, exc)
+        logger.warning("IntegrityError creating user name={name!r}: {exc}", name=user.name, exc=exc)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this name already exists"
@@ -74,7 +74,7 @@ def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get
         db.commit()
     except IntegrityError as exc:
         db.rollback()
-        logger.warning("IntegrityError updating user id=%d name=%r: %s", user_id, user_update.name, exc)
+        logger.warning("IntegrityError updating user id={user_id} name={name!r}: {exc}", user_id=user_id, name=user_update.name, exc=exc)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this name already exists"

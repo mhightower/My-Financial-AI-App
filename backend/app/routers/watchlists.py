@@ -155,7 +155,7 @@ def add_stock_to_watchlist(
         db.refresh(db_stock)
     except IntegrityError as exc:
         db.rollback()
-        logger.warning("IntegrityError adding %s to watchlist id=%d: %s", stock.ticker, watchlist_id, exc)
+        logger.warning("IntegrityError adding {ticker} to watchlist id={watchlist_id}: {exc}", ticker=stock.ticker, watchlist_id=watchlist_id, exc=exc)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"{stock.ticker} is already in this watchlist"
