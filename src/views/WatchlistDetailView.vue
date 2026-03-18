@@ -125,7 +125,7 @@ const {
 
 onMounted(async () => {
   const watchlistId = parseInt(route.params.id)
-  watchlist.value = await watchlistsStore.fetchWatchlist(watchlistId, currentUser.value?.id)
+  await watchlistsStore.fetchWatchlist(watchlistId, currentUser.value?.id)
 })
 
 const showRemoveConfirm = ref(false)
