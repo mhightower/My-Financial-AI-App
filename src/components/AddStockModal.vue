@@ -186,7 +186,8 @@ const addStock = async () => {
     close()
     emit('added')
   } catch (err) {
-    error.value = 'Failed to add stock: ' + (err.response?.data?.detail || err.message)
+    console.error('Failed to add stock:', err)
+    error.value = 'Failed to add stock. Please try again.'
   } finally {
     loading.value = false
   }

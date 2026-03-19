@@ -12,6 +12,7 @@ Vue 3 (Vite) frontend + FastAPI (uv) backend financial tracking app. Frontend on
 - **API-first**: Never bypass the backend. All data flows through REST endpoints.
 - **User-scoped data**: All watchlists, holdings, and theses are isolated per user.
 - **No Phase 2 features**: No analytics, tax reporting, alerts, or portfolio optimization — keep scope to MVP.
+- **Error Handling**: Surface backend errors to the user with generic, friendly messages (e.g., "Service unavailable, please try again later") — never expose raw error details, stack traces, DB messages, or internal paths.
 
 ## Dev Commands
 
