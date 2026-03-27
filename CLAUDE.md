@@ -36,19 +36,73 @@ Vue 3 (Vite) frontend + FastAPI (uv) backend financial tracking app. Frontend on
 
 ```text
 src/
-  main.js          - app entry point
-  App.vue          - root component, main layout
-  components/      - reusable components
-  views/           - page-level views
-  stores/          - Pinia stores
-  services/        - API service calls
+  main.js              - app entry point
+  App.vue              - root component, main layout
+  components/          - reusable UI components
+    AddStockModal.vue
+    ConfirmModal.vue
+    GlobalErrorToast.vue
+    ThesisAnalysisModal.vue
+    UserSwitcherModal.vue
+  composables/         - Vue composables
+    useAIThesis.js
+    useDebounce.js
+    useFocusTrap.js
+  router/
+    index.js           - Vue Router config
+  services/
+    api.js             - API service calls (backend only)
+  stores/              - Pinia stores
+    error.js
+    holdings.js
+    user.js
+    watchlists.js
+  styles/
+    buttons.css
+  tests/               - Vitest unit tests
+    components/
+    services/
+    stores/
+    views/
+  views/               - page-level views
+    AccountsView.vue
+    DashboardView.vue
+    HoldingsView.vue
+    NotFoundView.vue
+    WatchlistDetailView.vue
+    WatchlistsView.vue
 
-backend/app/
-  main.py          - FastAPI app, routes, CORS
-  pyproject.toml   - Python deps (uv)
+e2e/                   - Playwright E2E tests
+  add-stock.spec.js
+  helpers.js
+  holdings-accounts.spec.js
+  users.spec.js
+  watchlists.spec.js
+
+backend/
+  alembic/             - database migrations
+  app/
+    main.py            - FastAPI app, routes, CORS
+    database.py        - SQLAlchemy setup
+    logger.py          - Loguru logger
+    models.py          - SQLAlchemy models
+    schemas.py         - Pydantic schemas
+    routers/           - route handlers
+      ai.py
+      holdings.py
+      sell_transactions.py
+      stocks.py
+      users.py
+      watchlists.py
+    services/          - business logic
+      ai_service.py    - Claude API integration
+      alpha_vantage.py - stock data caching
+  tests/               - pytest tests
+  pyproject.toml       - Python deps (uv)
+  financial.db         - SQLite database
 ```
 
-1## Data Model
+## Data Model
 
 ```text
 User

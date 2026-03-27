@@ -22,6 +22,7 @@ Standard brokerage apps show you prices and let you trade. They don't help you t
 - Define **sell conditions** before opening a position
 - Set price triggers: buy target, profit target, stop-loss percentage
 - All decisions are dated and editable — your reasoning becomes an audit trail
+- **AI-powered thesis analysis** via Claude API — surfaces gaps in your reasoning and suggests sell conditions you may have missed
 
 ### Watchlists
 
@@ -54,7 +55,7 @@ Standard brokerage apps show you prices and let you trade. They don't help you t
 ## Tech Stack
 
 | Layer | Technology | Why |
-|---|---|---|
+| --- | --- | --- |
 | Frontend | Vue 3 + Composition API | Reactive, component-based UI; `<script setup>` for clean SFCs |
 | State | Pinia | Lightweight, TypeScript-friendly, replaces Vuex |
 | Routing | Vue Router 4 | Official router for Vue 3 |
@@ -65,7 +66,8 @@ Standard brokerage apps show you prices and let you trade. They don't help you t
 | Database | SQLite + aiosqlite | Zero-config, file-based, sufficient for personal use |
 | Validation | Pydantic v2 | Server-side schema enforcement, clean error messages |
 | Stock API | Alpha Vantage | Comprehensive market data, free tier available |
-| Testing | pytest-asyncio + Vitest | Async test support on backend; Vite-native on frontend |
+| AI | Claude API (claude-sonnet) | Investment thesis analysis and sell condition suggestions |
+| Testing | pytest-asyncio + Vitest + Playwright | Async backend tests; Vite-native unit tests; E2E browser tests |
 
 ---
 
@@ -113,11 +115,27 @@ my-financial/
 │   ├── stores/                 # Pinia state management
 │   │   ├── user.js
 │   │   ├── watchlists.js
-│   │   └── holdings.js
+│   │   ├── holdings.js
+│   │   └── error.js
+│   ├── components/
+│   │   ├── AddStockModal.vue
+│   │   ├── ConfirmModal.vue
+│   │   ├── GlobalErrorToast.vue
+│   │   ├── ThesisAnalysisModal.vue   # AI-powered thesis review
+│   │   └── UserSwitcherModal.vue
+│   ├── composables/
+│   │   ├── useAIThesis.js            # Claude API integration
+│   │   ├── useDebounce.js
+│   │   └── useFocusTrap.js
 │   ├── services/
 │   │   └── api.js              # Centralized Axios client
-│   └── components/
-│       └── UserSwitcherModal.vue
+│   └── tests/                  # Vitest unit tests (180 tests)
+│
+├── e2e/                        # Playwright E2E tests
+│   ├── watchlists.spec.js
+│   ├── holdings-accounts.spec.js
+│   ├── add-stock.spec.js
+│   └── users.spec.js
 │
 └── backend/
     ├── app/
@@ -125,20 +143,27 @@ my-financial/
     │   ├── models.py           # SQLAlchemy ORM models
     │   ├── schemas.py          # Pydantic request/response schemas
     │   ├── database.py         # Async DB session management
+    │   ├── logger.py           # Loguru structured logging
     │   ├── routers/            # Endpoint handlers by resource
     │   │   ├── users.py
     │   │   ├── watchlists.py
     │   │   ├── holdings.py
     │   │   ├── stocks.py
-    │   │   └── sell_transactions.py
+    │   │   ├── sell_transactions.py
+    │   │   └── ai.py           # Thesis analysis endpoints
     │   └── services/
-    │       └── alpha_vantage.py  # Market data + caching
-    └── tests/
-        ├── conftest.py           # In-memory DB fixtures
+    │       ├── alpha_vantage.py  # Market data + TTL caching
+    │       └── ai_service.py     # Claude API integration
+    ├── alembic/                # Database migrations
+    └── tests/                  # pytest-asyncio tests (92 tests)
+        ├── conftest.py         # In-memory DB fixtures
         ├── test_users.py
         ├── test_watchlists.py
         ├── test_holdings.py
         ├── test_stocks.py
+        ├── test_ai.py
+        ├── test_logging.py
+        ├── test_migrations.py
         └── test_main.py
 ```
 
@@ -157,6 +182,7 @@ Auto-generated interactive docs available at `http://localhost:8000/docs` when t
 | Sell Transactions | `GET/POST /api/v1/sell-transactions`, `GET/PUT/DELETE /api/v1/sell-transactions/{id}` |
 | Accounts | `GET/POST /api/v1/accounts`, `GET/PUT/DELETE /api/v1/accounts/{id}` |
 | Market Data | `GET /api/v1/stocks/search`, `GET /api/v1/stocks/{ticker}/quote`, `GET /api/v1/stocks/{ticker}/detail`, `GET /api/v1/stocks/{ticker}/history` |
+| AI Analysis | `POST /api/v1/ai/analyze-thesis` |
 
 ---
 
@@ -216,13 +242,25 @@ Coverage includes:
 - Full CRUD for every resource (users, watchlists, holdings, accounts, transactions)
 - Validation and error responses (404s, 400s, constraint violations)
 - Business rules (15-stock watchlist limit, cascade deletes)
-- ~47 tests across 5 test modules
+- Migration integrity and schema constraint tests
+- Structured logging verification
+- 92 tests across 8 test modules
 
 ### Frontend
 
 ```bash
 npm test
 ```
+
+180 unit tests covering stores, views, components, and API service layer.
+
+### E2E
+
+```bash
+npx playwright test
+```
+
+Playwright tests cover the full user workflow: creating users, managing watchlists, adding stocks, and recording holdings.
 
 ---
 
@@ -260,8 +298,7 @@ This project is scoped for personal use, but if it were a real product:
 - **Database**: Migrate SQLite → PostgreSQL for concurrent writes and proper indexing
 - **Caching**: Move Alpha Vantage cache to Redis so it persists across server restarts
 - **Real-time**: WebSockets or SSE for live price updates instead of polling
-- **Frontend tests**: Expand Vitest coverage; add E2E tests with Playwright
-- **Deployment**: Containerize with Docker Compose; deploy to Railway or Fly.io
+- **Deployment**: Containerize with Docker Compose
 
 ---
 
