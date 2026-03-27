@@ -16,30 +16,30 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 ### Stock Data API
 
 - [X] Install Alpha Vantage MCP
-- [ ] Search stocks/ETFs by ticker symbol
-- [ ] Search stocks/ETFs by company name
-- [ ] Fetch current price and daily % change
-- [ ] Fetch key metrics (P/E, market cap, 52-week high/low)
-- [ ] Fetch dividend yield and payout info
-- [ ] Fetch historical price data (30d, 90d, 1y intervals)
-- [ ] Cache API responses to minimize rate limits
+- [X] Search stocks/ETFs by ticker symbol
+- [X] Search stocks/ETFs by company name
+- [X] Fetch current price and daily % change
+- [X] Fetch key metrics (P/E, market cap, 52-week high/low)
+- [X] Fetch dividend yield and payout info
+- [X] Fetch historical price data (30d, 90d, 1y intervals)
+- [X] Cache API responses to minimize rate limits
 
 ### User Management
 
-- [ ] Create local user profile (name, avatar/color)
-- [ ] Edit user profile
-- [ ] Delete user profile (with confirmation)
-- [ ] Switch between users (dropdown in header navigation)
-- [ ] Persist user preferences and data separately
+- [X] Create local user profile (name, avatar/color)
+- [X] Edit user profile
+- [X] Delete user profile (with confirmation)
+- [X] Switch between users (dropdown in header navigation)
+- [X] Persist user preferences and data separately
 
 ### Dashboard
 
 - [ ] Portfolio summary card (total value, gain/loss, % return)
 - [ ] Quick stock search bar (ticker symbol entry)
-- [ ] List of watchlists with stock counts
+- [X] List of watchlists with stock counts
 - [ ] Recently added stocks with prices
 - [ ] Top movers from watchlists (biggest daily % changes)
-- [ ] Link to manage accounts and holdings
+- [X] Link to manage accounts and holdings
 
 ### Stock Detail View
 
@@ -54,46 +54,47 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 
 ### Thesis
 
-- [ ] Write buy thesis (why you should purchase this stock)
-- [ ] Write sell thesis (why and when you should exit)
-- [ ] Record thesis creation date
-- [ ] Edit existing thesis
+- [X] Write buy thesis (why you should purchase this stock)
+- [X] Write sell thesis (why and when you should exit)
+- [X] Record thesis creation date
+- [X] Edit existing thesis
+- [X] AI-powered thesis analysis (quality score, blind spots, suggestions via Claude API)
 - [ ] View thesis update history (optional phase 2)
 
 ### Triggers
 
-- [ ] Buy trigger: target price below which to purchase
-- [ ] Sell trigger: target price to take profits
-- [ ] Stop-loss trigger: maximum % drop before selling
+- [X] Buy trigger: target price below which to purchase
+- [X] Sell trigger: target price to take profits
+- [X] Stop-loss trigger: maximum % drop before selling
 - [ ] Visual badge indicator on watchlist if trigger is breached
 - [ ] Dashboard notification when trigger price is hit
 
 ### Watchlists
 
 - [X] Create watchlist with name and description
-- [ ] Edit watchlist name and description
-- [ ] Delete watchlist
+- [X] Edit watchlist name and description
+- [X] Delete watchlist
 - [X] Add stocks to watchlist
 - [X] Remove stocks from watchlist
 - [ ] Move stock between watchlists
 - [ ] Display stock price and daily % change inline
-- [ ] Show thesis indicator badge (thesis exists or not)
-- [ ] Show trigger indicator badge (triggers set or not)
-- [ ] Enforce max of 15 stocks per watchlist
+- [X] Show thesis indicator badge (thesis exists or not)
+- [X] Show trigger indicator badge (triggers set or not)
+- [X] Enforce max of 15 stocks per watchlist
 - [ ] Sort stocks by price, % change, or date added
 - [ ] View watchlist overview (total value, top mover)
 - [X] Fix Delete icon
 
 ### Holdings & Portfolio
 
-- [ ] Record buy order (ticker, shares, price paid, date, account)
-- [ ] Record sell order (ticker, shares, price received, date, account)
-- [ ] Display unrealized gain/loss per position
-- [ ] Show cost basis vs current value
-- [ ] Show % return per position
+- [X] Record buy order (ticker, shares, price paid, date, account)
+- [X] Record sell order (ticker, shares, price received, date, account)
+- [X] Display unrealized gain/loss per position
+- [X] Show cost basis vs current value
+- [X] Show % return per position
 - [ ] Calculate weighted average cost basis
 - [ ] Link holdings to investment thesis and triggers
-- [ ] Support partial sells (reduce position size)
+- [X] Support partial sells (reduce position size)
 
 ### Accounts
 
@@ -102,7 +103,7 @@ A personal stock & ETF tracker that enforces investment discipline through docum
 - [X] Delete brokerage account
 - [X] Associate holdings with specific account
 - [X] Account-level portfolio summary (total value, gain/loss)
-- [ ] Account type displays (visual indicator for tax status)
+- [X] Account type displays (visual indicator for tax status)
 
 ## Phase 2
 
