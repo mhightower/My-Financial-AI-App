@@ -210,7 +210,7 @@ def test_upgrade_is_idempotent(migration_db):
 
 def test_stocks_in_watchlist_unique_constraint(migration_db):
     """The stocks_in_watchlist table should enforce unique (watchlist_id, ticker)."""
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     cfg = get_alembic_config(migration_db)
     command.upgrade(cfg, "head")
@@ -222,21 +222,21 @@ def test_stocks_in_watchlist_unique_constraint(migration_db):
             text(
                 "INSERT INTO users (name, created_at) VALUES ('testuser', :now)"
             ),
-            {"now": datetime.utcnow()},
+            {"now": datetime.now(timezone.utc)},
         )
         conn.execute(
             text(
                 "INSERT INTO watchlists (name, owner_user_id, created_date) "
                 "VALUES ('My Watchlist', 1, :now)"
             ),
-            {"now": datetime.utcnow()},
+            {"now": datetime.now(timezone.utc)},
         )
         conn.execute(
             text(
                 "INSERT INTO stocks_in_watchlist (watchlist_id, ticker, added_date) "
                 "VALUES (1, 'AAPL', :now)"
             ),
-            {"now": datetime.utcnow()},
+            {"now": datetime.now(timezone.utc)},
         )
         conn.commit()
 
@@ -247,7 +247,7 @@ def test_stocks_in_watchlist_unique_constraint(migration_db):
                     "INSERT INTO stocks_in_watchlist (watchlist_id, ticker, added_date) "
                     "VALUES (1, 'AAPL', :now)"
                 ),
-                {"now": datetime.utcnow()},
+                {"now": datetime.now(timezone.utc)},
             )
             conn.commit()
 
