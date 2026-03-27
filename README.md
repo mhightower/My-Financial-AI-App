@@ -14,6 +14,18 @@ Standard brokerage apps show you prices and let you trade. They don't help you t
 
 ---
 
+## Screenshots
+
+| Dashboard | Watchlists |
+| --- | --- |
+| ![Dashboard](screenshots/01-dashboard.png) | ![Watchlists](screenshots/02-watchlists.png) |
+
+| Watchlist Detail (thesis + triggers) | Holdings & P&L |
+| --- | --- |
+| ![Watchlist Detail](screenshots/03-watchlist-detail.png) | ![Holdings](screenshots/04-holdings.png) |
+
+---
+
 ## Features
 
 ### Investment Discipline
