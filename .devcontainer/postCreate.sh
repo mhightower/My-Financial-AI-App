@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Installing uv (if missing)..."
-if ! command -v uv >/dev/null 2>&1; then
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  export PATH="$HOME/.local/bin:$PATH"
-fi
-
 echo "Installing frontend dependencies..."
 npm install
 
