@@ -215,6 +215,9 @@ def test_stocks_in_watchlist_unique_constraint(migration_db):
     cfg = get_alembic_config(migration_db)
     command.upgrade(cfg, "head")
 
+    # Use ISO string, not raw datetime, to avoid Python 3.12 deprecated sqlite3 adapter
+    now = datetime.now(timezone.utc).isoformat()
+
     engine = create_engine(migration_db)
     with engine.connect() as conn:
         # Insert a user, watchlist, then two stocks with same ticker in same watchlist
@@ -222,21 +225,21 @@ def test_stocks_in_watchlist_unique_constraint(migration_db):
             text(
                 "INSERT INTO users (name, created_at) VALUES ('testuser', :now)"
             ),
-            {"now": datetime.now(timezone.utc)},
+            {"now": now},
         )
         conn.execute(
             text(
                 "INSERT INTO watchlists (name, owner_user_id, created_date) "
                 "VALUES ('My Watchlist', 1, :now)"
             ),
-            {"now": datetime.now(timezone.utc)},
+            {"now": now},
         )
         conn.execute(
             text(
                 "INSERT INTO stocks_in_watchlist (watchlist_id, ticker, added_date) "
                 "VALUES (1, 'AAPL', :now)"
             ),
-            {"now": datetime.now(timezone.utc)},
+            {"now": now},
         )
         conn.commit()
 
@@ -247,7 +250,7 @@ def test_stocks_in_watchlist_unique_constraint(migration_db):
                     "INSERT INTO stocks_in_watchlist (watchlist_id, ticker, added_date) "
                     "VALUES (1, 'AAPL', :now)"
                 ),
-                {"now": datetime.now(timezone.utc)},
+                {"now": now},
             )
             conn.commit()
 
