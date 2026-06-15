@@ -244,7 +244,8 @@ npm run dev
 ```bash
 cd backend
 uv sync --extra dev
-uv run pytest
+uv run pytest                                      # pass/fail only
+uv run pytest --cov=app --cov-report=term-missing  # with line-level coverage
 ```
 
 The test suite uses an **in-memory SQLite database** per test — no cleanup needed, no state leakage between tests. Fixtures in `conftest.py` wire up a fresh database and a FastAPI `TestClient` for every test function.
@@ -256,7 +257,7 @@ Coverage includes:
 - Business rules (15-stock watchlist limit, cascade deletes)
 - Migration integrity and schema constraint tests
 - Structured logging verification
-- 92 tests across 8 test modules
+- 127 tests across 9 test modules (~80% line coverage)
 
 ### Frontend
 
