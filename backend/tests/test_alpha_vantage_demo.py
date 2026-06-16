@@ -4,22 +4,27 @@ Tests for the alpha_vantage service demo mode.
 All tests here exercise the _demo_* helpers and the _DEMO_MODE branch in each
 public function directly, without making any HTTP calls.
 """
-import pytest
 from unittest.mock import patch
 
+import pytest
+
+from app.schemas import (
+    StockDetailResponse,
+    StockHistoryPoint,
+    StockQuoteResponse,
+    StockSearchResult,
+)
 from app.services.alpha_vantage import (
+    _FIXTURES,
     _demo_history,
     _demo_overview,
     _demo_quote,
     _demo_search,
-    _FIXTURES,
     get_daily_history,
     get_overview,
     get_quote,
     search_symbol,
 )
-from app.schemas import StockDetailResponse, StockHistoryPoint, StockQuoteResponse, StockSearchResult
-
 
 # ---------------------------------------------------------------------------
 # _demo_search
