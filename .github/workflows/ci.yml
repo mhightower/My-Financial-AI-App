@@ -52,7 +52,7 @@ jobs:
   e2e:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: .
@@ -67,6 +67,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Install Playwright system deps
+        run: npx playwright install-deps chromium
+
       - name: Cache Playwright browsers
         uses: actions/cache@v6
         id: playwright-cache
@@ -74,13 +77,9 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Playwright browsers
+      - name: Install Playwright browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install chromium --with-deps
-
-      - name: Install Playwright system deps only (cached browsers)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: npx playwright install chromium
 
       - run: npm run build
       - run: npm run test:e2e
