@@ -13,8 +13,7 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     headless: true,
     viewport: { width: 1280, height: 720 },
-    // Intercept all /api calls — no real backend required
-    // (each test file sets up its own route mocks)
+    ...(process.env.CI && { channel: 'chrome' }),
   },
 
   webServer: {
