@@ -9,7 +9,10 @@ import { useHoldingsStore } from '../../stores/holdings'
 
 vi.mock('../../services/api', () => ({
   watchlists: { list: vi.fn().mockResolvedValue({ data: [] }) },
-  holdings: { list: vi.fn().mockResolvedValue({ data: [] }) },
+  holdings: {
+    list: vi.fn().mockResolvedValue({ data: [] }),
+    getPerformance: vi.fn().mockResolvedValue({ data: null })
+  },
   accounts: { list: vi.fn().mockResolvedValue({ data: [] }) }
 }))
 
@@ -46,6 +49,10 @@ function mountDashboard(userState = {}) {
   if (userState.accounts) {
     const hStore = useHoldingsStore()
     hStore.accounts = userState.accounts
+  }
+  if (userState.performance) {
+    const hStore = useHoldingsStore()
+    hStore.performance = userState.performance
   }
 
   return mount(DashboardView, {
@@ -84,18 +91,52 @@ describe('DashboardView', () => {
     expect(signOut.length).toBe(0)
   })
 
-  it('displays stat cards with correct counts', () => {
+  it('displays stat cards with portfolio value, return, and counts', () => {
     const wrapper = mountDashboard({
       currentUser: { id: 1, name: 'Alice' },
       watchlists: [{ id: 1, name: 'WL1' }, { id: 2, name: 'WL2' }],
       holdings: [{ id: 1, ticker: 'AAPL' }],
-      accounts: [{ id: 1, name: 'Fidelity' }]
+      accounts: [{ id: 1, name: 'Fidelity' }],
+      performance: {
+        holdings: [],
+        total_cost_basis: 4000,
+        total_current_value: 4650,
+        total_unrealized_gain_loss: 650
+      }
     })
 
     const statValues = wrapper.findAll('.stat-value')
-    expect(statValues[0].text()).toBe('2')
-    expect(statValues[1].text()).toBe('1')
-    expect(statValues[2].text()).toBe('1')
+    expect(statValues[0].text()).toContain('$4,650.00')
+    expect(statValues[1].text()).toContain('+$650.00')
+    expect(statValues[2].text()).toBe('2')
+    expect(statValues[3].text()).toBe('1')
+    expect(statValues[4].text()).toBe('1')
+  })
+
+  it('shows placeholder for portfolio value when performance is unavailable', () => {
+    const wrapper = mountDashboard({
+      currentUser: { id: 1, name: 'Alice' }
+    })
+
+    const statValues = wrapper.findAll('.stat-value')
+    expect(statValues[0].text()).toContain('—')
+    expect(statValues[1].text()).toContain('—')
+  })
+
+  it('colors negative total return as loss', () => {
+    const wrapper = mountDashboard({
+      currentUser: { id: 1, name: 'Alice' },
+      performance: {
+        holdings: [],
+        total_cost_basis: 4000,
+        total_current_value: 3200,
+        total_unrealized_gain_loss: -800
+      }
+    })
+
+    const statValues = wrapper.findAll('.stat-value')
+    expect(statValues[1].text()).toContain('-$800.00')
+    expect(statValues[1].classes()).toContain('mono-red')
   })
 
   it('shows empty watchlists message', () => {
@@ -121,16 +162,33 @@ describe('DashboardView', () => {
     expect(wrapper.text()).toContain('0/15')
   })
 
-  it('renders navigation quick links', () => {
+  it('renders top positions sorted by current value', () => {
+    const wrapper = mountDashboard({
+      currentUser: { id: 1, name: 'Alice' },
+      performance: {
+        holdings: [
+          { id: 1, ticker: 'AAPL', current_value: 2000, return_pct: 5.5 },
+          { id: 2, ticker: 'MSFT', current_value: 6200, return_pct: -1.2 }
+        ],
+        total_cost_basis: 8000,
+        total_current_value: 8200,
+        total_unrealized_gain_loss: 200
+      }
+    })
+
+    const rows = wrapper.findAll('.pos-row')
+    expect(rows.length).toBe(2)
+    expect(rows[0].text()).toContain('MSFT')
+    expect(rows[0].text()).toContain('-1.20%')
+    expect(rows[1].text()).toContain('AAPL')
+    expect(rows[1].text()).toContain('+5.50%')
+  })
+
+  it('shows empty positions message when there are no holdings', () => {
     const wrapper = mountDashboard({
       currentUser: { id: 1, name: 'Alice' }
     })
-
-    const links = wrapper.findAll('.quick-link')
-    expect(links.length).toBe(3)
-    expect(links[0].text()).toContain('Watchlists')
-    expect(links[1].text()).toContain('Holdings')
-    expect(links[2].text()).toContain('Accounts')
+    expect(wrapper.text()).toContain('No positions yet')
   })
 
   it('limits displayed watchlists to 6', () => {
