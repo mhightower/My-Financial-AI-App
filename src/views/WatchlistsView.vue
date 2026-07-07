@@ -15,10 +15,20 @@
     <div v-else-if="watchlists.length === 0" class="panel empty-state">
       <p>No watchlists yet.</p>
       <p style="margin-top: 0.5rem; font-size: 0.8rem;">Create a watchlist to start tracking stocks with investment theses.</p>
+      <button @click="openModal" class="btn btn-primary" style="margin-top: 1rem;">+ Create Watchlist</button>
     </div>
 
     <div v-else class="watchlists-grid">
-      <div v-for="wl in watchlists" :key="wl.id" class="wl-card">
+      <div
+        v-for="wl in watchlists"
+        :key="wl.id"
+        class="wl-card"
+        role="link"
+        tabindex="0"
+        :aria-label="`Open watchlist ${wl.name}`"
+        @click="$router.push(`/watchlist/${wl.id}`)"
+        @keydown.enter="$router.push(`/watchlist/${wl.id}`)"
+      >
         <div class="wl-card-header">
           <span class="wl-card-name">{{ wl.name }}</span>
           <div class="wl-card-actions">
@@ -29,7 +39,7 @@
         <p v-if="wl.description" class="wl-card-desc">{{ wl.description }}</p>
         <div class="wl-card-footer">
           <span class="wl-stock-count mono-amber">{{ wl.stocks?.length || 0 }}<span class="wl-stock-max">/15</span></span>
-          <router-link :to="`/watchlist/${wl.id}`" class="wl-view-link">Open →</router-link>
+          <span class="wl-view-link">Open →</span>
         </div>
       </div>
     </div>
@@ -159,24 +169,27 @@ const deleteWatchlist = async (id) => {
 .watchlists-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  gap: 1rem;
 }
 
 .wl-card {
   background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  transition: background 0.12s;
-  cursor: default;
+  transition: background 0.12s, border-color 0.12s;
+  cursor: pointer;
 }
 
-.wl-card:hover { background: var(--bg-2); }
+.wl-card:hover {
+  background: var(--bg-2);
+  border-color: var(--border-hi);
+}
+
+.wl-card:hover .wl-view-link { color: var(--amber-hi); }
 
 .wl-card-header {
   display: flex;

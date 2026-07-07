@@ -55,6 +55,41 @@ describe('WatchlistsView', () => {
     expect(wrapper.text()).toContain('Please select a user')
   })
 
+  it('navigates to the watchlist when the card is clicked', async () => {
+    const wrapper = mountView({
+      currentUser: { id: 1, name: 'Alice' },
+      watchlists: [{ id: 7, name: 'Growth', description: '', stocks: [] }]
+    })
+    const router = wrapper.vm.$router
+    const push = vi.spyOn(router, 'push')
+
+    await wrapper.find('.wl-card').trigger('click')
+
+    expect(push).toHaveBeenCalledWith('/watchlist/7')
+  })
+
+  it('does not navigate when the edit button is clicked', async () => {
+    const wrapper = mountView({
+      currentUser: { id: 1, name: 'Alice' },
+      watchlists: [{ id: 7, name: 'Growth', description: '', stocks: [] }]
+    })
+    const router = wrapper.vm.$router
+    const push = vi.spyOn(router, 'push')
+
+    await wrapper.find('.wl-card .icon-btn').trigger('click')
+
+    expect(push).not.toHaveBeenCalled()
+  })
+
+  it('shows a create CTA in the empty state', () => {
+    const wrapper = mountView({
+      currentUser: { id: 1, name: 'Alice' },
+      watchlists: []
+    })
+    const cta = wrapper.findAll('button').find(b => b.text().includes('Create Watchlist'))
+    expect(cta).toBeTruthy()
+  })
+
   it('shows empty state when no watchlists', () => {
     const wrapper = mountView({
       currentUser: { id: 1, name: 'Alice' },

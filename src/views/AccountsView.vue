@@ -64,9 +64,10 @@
         </div>
       </div>
 
-      <div v-else class="panel empty-state">
+      <div v-else-if="!showCreateForm" class="panel empty-state">
         <p>No accounts yet.</p>
         <p style="margin-top:0.5rem; font-size:0.8rem;">Add a brokerage account to track holdings by account type.</p>
+        <button @click="openCreateForm" class="btn btn-primary" style="margin-top:1rem;">+ Create Account</button>
       </div>
     </template>
 
@@ -173,23 +174,24 @@ const deleteAccountConfirm = (id) => {
 .accounts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  gap: 1rem;
 }
 
 .account-card {
   background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s;
 }
 
-.account-card:hover { background: var(--bg-2); }
+.account-card:hover {
+  background: var(--bg-2);
+  border-color: var(--border-hi);
+}
 
 .account-card-top {
   display: flex;
