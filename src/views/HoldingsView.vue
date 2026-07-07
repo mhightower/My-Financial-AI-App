@@ -58,13 +58,11 @@
               <tr>
                 <th>Ticker</th>
                 <th>Qty</th>
-                <th>Entry Price</th>
-                <th>Date</th>
+                <th>Entry</th>
                 <th>Cost Basis</th>
                 <th>Current Price</th>
                 <th>Current Value</th>
                 <th>Gain / Loss</th>
-                <th>Return %</th>
                 <th>Account</th>
                 <th></th>
               </tr>
@@ -73,8 +71,12 @@
               <tr v-for="holding in perfHoldings" :key="holding.id">
                 <td><span class="mono-amber" style="font-size:0.95rem; font-weight:600;">{{ holding.ticker }}</span></td>
                 <td><span class="mono">{{ holding.quantity }}</span></td>
-                <td><span class="mono">${{ holding.entry_price.toFixed(2) }}</span></td>
-                <td><span class="mono-muted" style="font-size:0.8rem;">{{ formatDate(holding.entry_date) }}</span></td>
+                <td>
+                  <div class="cell-stack">
+                    <span class="mono">${{ holding.entry_price.toFixed(2) }}</span>
+                    <span class="cell-sub mono-muted">{{ formatDate(holding.entry_date) }}</span>
+                  </div>
+                </td>
                 <td><span class="mono-amber">${{ (holding.quantity * holding.entry_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span></td>
                 <td>
                   <span v-if="performanceLoading" class="mono-muted" style="font-size:0.75rem;">…</span>
@@ -88,17 +90,14 @@
                   <span v-else class="mono-muted">—</span>
                 </td>
                 <td>
-                  <span v-if="holding.unrealized_gain_loss != null"
-                    :class="holding.unrealized_gain_loss >= 0 ? 'mono-green' : 'mono-red'">
-                    {{ holding.unrealized_gain_loss >= 0 ? '+' : '' }}${{ holding.unrealized_gain_loss.toFixed(2) }}
-                  </span>
-                  <span v-else class="mono-muted">—</span>
-                </td>
-                <td>
-                  <span v-if="holding.return_pct != null"
-                    :class="holding.return_pct >= 0 ? 'mono-green' : 'mono-red'">
-                    {{ holding.return_pct >= 0 ? '+' : '' }}{{ holding.return_pct.toFixed(2) }}%
-                  </span>
+                  <div v-if="holding.unrealized_gain_loss != null" class="cell-stack">
+                    <span :class="holding.unrealized_gain_loss >= 0 ? 'mono-green' : 'mono-red'">
+                      {{ holding.unrealized_gain_loss >= 0 ? '+' : '' }}${{ holding.unrealized_gain_loss.toFixed(2) }}
+                    </span>
+                    <span v-if="holding.return_pct != null" class="cell-sub" :class="holding.return_pct >= 0 ? 'mono-green' : 'mono-red'">
+                      {{ holding.return_pct >= 0 ? '+' : '' }}{{ holding.return_pct.toFixed(2) }}%
+                    </span>
+                  </div>
                   <span v-else class="mono-muted">—</span>
                 </td>
                 <td><span style="color:var(--text-1); font-size:0.82rem;">{{ getAccountName(holding.account_id) }}</span></td>
@@ -117,6 +116,8 @@
       <div v-else class="panel empty-state">
         <p>No holdings yet.</p>
         <p style="margin-top:0.5rem; font-size:0.8rem;">Add a holding to track your portfolio positions.</p>
+        <button v-if="accounts.length > 0" @click="openAddModal" class="btn btn-primary" style="margin-top:1rem;">+ Add First Holding</button>
+        <router-link v-else to="/accounts" class="btn btn-ghost" style="margin-top:1rem;">Create an account first →</router-link>
       </div>
     </template>
 
@@ -384,6 +385,16 @@ onMounted(async () => {
 .table-wrap {
   overflow-x: auto;
 }
+
+.table-wrap :deep(td) { white-space: nowrap; }
+
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cell-sub { font-size: 0.72rem; }
 
 .row-actions {
   display: flex;
