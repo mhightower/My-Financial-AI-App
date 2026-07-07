@@ -35,6 +35,12 @@
         <div v-for="stock in watchlist.stocks" :key="stock.id" class="stock-card">
           <div class="stock-top">
             <span class="stock-ticker mono-amber">{{ stock.ticker }}</span>
+            <div v-if="quoteFor(stock.ticker)" class="stock-quote">
+              <span class="quote-price mono">${{ quoteFor(stock.ticker).current_price.toFixed(2) }}</span>
+              <span class="quote-change" :class="quoteFor(stock.ticker).daily_change_pct >= 0 ? 'up' : 'down'">
+                {{ quoteFor(stock.ticker).daily_change_pct >= 0 ? '+' : '' }}{{ quoteFor(stock.ticker).daily_change_pct.toFixed(2) }}%
+              </span>
+            </div>
             <div class="stock-triggers">
               <div class="trigger-group" v-if="stock.buy_price">
                 <span class="trigger-label">BUY</span>
@@ -114,6 +120,11 @@ const currentUser = computed(() => userStore.currentUser)
 
 const showAddModal = ref(false)
 
+const quoteFor = (ticker) => {
+  const quote = watchlistsStore.quotes[ticker?.toUpperCase()]
+  return quote?.current_price != null ? quote : null
+}
+
 const {
   analyzingId,
   showAnalysisModal,
@@ -125,7 +136,11 @@ const {
 
 onMounted(async () => {
   const watchlistId = parseInt(route.params.id)
-  await watchlistsStore.fetchWatchlist(watchlistId, currentUser.value?.id)
+  const wl = await watchlistsStore.fetchWatchlist(watchlistId, currentUser.value?.id)
+  if (wl?.stocks?.length) {
+    // Non-blocking: thesis renders first, prices stream in
+    watchlistsStore.fetchQuotes(wl.stocks.map(s => s.ticker))
+  }
 })
 
 const showRemoveConfirm = ref(false)
@@ -189,6 +204,30 @@ const removeStock = async (stockId) => {
   letter-spacing: 0.04em;
   min-width: 60px;
 }
+
+/* Live quote */
+.stock-quote {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.quote-price {
+  font-size: 0.95rem;
+  color: var(--text-0);
+}
+
+.quote-change {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.quote-change.up { color: var(--green); background: var(--green-dim); }
+.quote-change.down { color: var(--red); background: var(--red-dim); }
 
 .stock-triggers {
   display: flex;
@@ -255,5 +294,6 @@ const removeStock = async (stockId) => {
 
 @media (max-width: 640px) {
   .thesis-row { grid-template-columns: 1fr; }
+  .stock-top { flex-wrap: wrap; row-gap: 0.5rem; }
 }
 </style>

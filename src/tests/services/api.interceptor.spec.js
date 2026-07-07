@@ -140,4 +140,18 @@ describe('API Service — interceptor behavior', () => {
     const error = { response: { status: 422, data: { detail: 'Validation error' } } }
     await expect(capturedResponseInterceptor.rejected(error)).rejects.toBe(error)
   })
+
+  it('does not show a toast when the request opted out via skipErrorToast', async () => {
+    if (!capturedResponseInterceptor?.rejected) return
+    const { useErrorStore } = await import('../../stores/error')
+    const mockAddError = vi.fn()
+    useErrorStore.mockReturnValue({ addError: mockAddError })
+
+    const error = {
+      config: { skipErrorToast: true },
+      response: { status: 404, data: { detail: 'Not found' } }
+    }
+    await expect(capturedResponseInterceptor.rejected(error)).rejects.toBe(error)
+    expect(mockAddError).not.toHaveBeenCalled()
+  })
 })

@@ -23,7 +23,8 @@ const MOCK_STOCK_NO_THESIS = {
 
 vi.mock('../../services/api', () => ({
   stocks: {
-    search: vi.fn().mockResolvedValue({ data: [] })
+    search: vi.fn().mockResolvedValue({ data: [] }),
+    getQuote: vi.fn().mockResolvedValue({ data: { ticker: 'AAPL', current_price: 312.66, daily_change_pct: 1.31 } })
   },
   watchlists: {
     get: vi.fn().mockResolvedValue({ data: { id: 1, name: 'Growth', description: 'Long-term picks', stocks: [] } }),
@@ -253,6 +254,46 @@ describe('WatchlistDetailView', () => {
 
     expect(wrapper.find('#ticker').element.value).toBe('MSFT')
     expect(wrapper.find('.search-dropdown').exists()).toBe(false)
+  })
+
+  // --- Live quotes ---
+
+  it('shows current price and daily change when a quote is available', async () => {
+    const wrapper = await mountView({ ...MOCK_WATCHLIST_EMPTY, stocks: [MOCK_STOCK] })
+    const store = useWatchlistsStore()
+    store.quotes = { AAPL: { ticker: 'AAPL', current_price: 312.66, daily_change_pct: 1.31 } }
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).toContain('$312.66')
+    expect(wrapper.text()).toContain('+1.31%')
+    expect(wrapper.find('.quote-change.up').exists()).toBe(true)
+  })
+
+  it('colors a negative daily change as down', async () => {
+    const wrapper = await mountView({ ...MOCK_WATCHLIST_EMPTY, stocks: [MOCK_STOCK] })
+    const store = useWatchlistsStore()
+    store.quotes = { AAPL: { ticker: 'AAPL', current_price: 98.4, daily_change_pct: -2.05 } }
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).toContain('-2.05%')
+    expect(wrapper.find('.quote-change.down').exists()).toBe(true)
+  })
+
+  it('renders no quote block when quote is missing', async () => {
+    const wrapper = await mountView({ ...MOCK_WATCHLIST_EMPTY, stocks: [MOCK_STOCK] })
+    expect(wrapper.find('.stock-quote').exists()).toBe(false)
+  })
+
+  it('fetches quotes for the watchlist stocks on mount', async () => {
+    const { watchlists, stocks } = await import('../../services/api')
+    watchlists.get.mockResolvedValueOnce({
+      data: { ...MOCK_WATCHLIST_EMPTY, stocks: [MOCK_STOCK] }
+    })
+
+    await mountView(null)
+    await new Promise(r => setTimeout(r, 0))
+
+    expect(stocks.getQuote).toHaveBeenCalledWith('AAPL', { skipErrorToast: true })
   })
 
   // --- Remove stock ---

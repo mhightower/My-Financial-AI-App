@@ -28,6 +28,12 @@ function extractDetail(detail) {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Callers can opt out of the global toast (e.g. per-ticker quote
+    // lookups where a stale/invalid symbol is expected and non-fatal)
+    if (error.config?.skipErrorToast) {
+      return Promise.reject(error)
+    }
+
     const errorStore = useErrorStore()
 
     let message = 'An unexpected error occurred.'
@@ -108,7 +114,7 @@ export const holdings = {
 // Stock endpoints
 export const stocks = {
   search: (query, limit = 10) => api.get('/stocks/search', { params: { q: query, limit } }),
-  getQuote: (ticker) => api.get(`/stocks/${ticker}/quote`),
+  getQuote: (ticker, config = {}) => api.get(`/stocks/${ticker}/quote`, config),
   getDetail: (ticker) => api.get(`/stocks/${ticker}/detail`),
   getHistory: (ticker, days = 30) => api.get(`/stocks/${ticker}/history?days=${days}`)
 }

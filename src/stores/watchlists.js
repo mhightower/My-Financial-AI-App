@@ -5,8 +5,30 @@ import * as api from '../services/api'
 export const useWatchlistsStore = defineStore('watchlists', () => {
   const watchlists = ref([])
   const currentWatchlist = ref(null)
+  const quotes = ref({})
+  const quotesLoading = ref(false)
   const loading = ref(false)
   const error = ref(null)
+
+  // Best-effort market data: failures for individual tickers (bad symbol,
+  // rate limit) are silent — cards simply render without a quote.
+  const fetchQuotes = async (tickers) => {
+    const unique = [...new Set((tickers || []).filter(Boolean).map(t => t.toUpperCase()))]
+    if (unique.length === 0) return
+    quotesLoading.value = true
+    try {
+      const results = await Promise.allSettled(
+        unique.map(t => api.stocks.getQuote(t, { skipErrorToast: true }))
+      )
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') {
+          quotes.value[unique[i]] = result.value.data
+        }
+      })
+    } finally {
+      quotesLoading.value = false
+    }
+  }
 
   const fetchWatchlists = async (userId) => {
     loading.value = true
@@ -132,8 +154,11 @@ export const useWatchlistsStore = defineStore('watchlists', () => {
   return {
     watchlists,
     currentWatchlist,
+    quotes,
+    quotesLoading,
     loading,
     error,
+    fetchQuotes,
     fetchWatchlists,
     fetchWatchlist,
     createWatchlist,

@@ -13,6 +13,9 @@ vi.mock('../../services/api', () => ({
     addStock: vi.fn(),
     updateStock: vi.fn(),
     removeStock: vi.fn()
+  },
+  stocks: {
+    getQuote: vi.fn()
   }
 }))
 
@@ -176,6 +179,55 @@ describe('useWatchlistsStore', () => {
 
       expect(result).toBeNull()
       expect(store.error).toBe('Fail')
+    })
+  })
+
+  describe('fetchQuotes', () => {
+    it('fetches quotes and stores them keyed by ticker', async () => {
+      api.stocks.getQuote.mockImplementation((ticker) =>
+        Promise.resolve({ data: { ticker, current_price: 100.5, daily_change_pct: 1.25 } })
+      )
+
+      await store.fetchQuotes(['AAPL', 'NET'])
+
+      expect(store.quotes.AAPL.current_price).toBe(100.5)
+      expect(store.quotes.NET.daily_change_pct).toBe(1.25)
+    })
+
+    it('suppresses the global error toast for quote requests', async () => {
+      api.stocks.getQuote.mockResolvedValue({ data: { ticker: 'AAPL', current_price: 1, daily_change_pct: 0 } })
+
+      await store.fetchQuotes(['AAPL'])
+
+      expect(api.stocks.getQuote).toHaveBeenCalledWith('AAPL', { skipErrorToast: true })
+    })
+
+    it('keeps successful quotes when some tickers fail', async () => {
+      api.stocks.getQuote.mockImplementation((ticker) =>
+        ticker === 'BAD'
+          ? Promise.reject(new Error('Not found'))
+          : Promise.resolve({ data: { ticker, current_price: 50, daily_change_pct: -0.5 } })
+      )
+
+      await store.fetchQuotes(['GOOD', 'BAD'])
+
+      expect(store.quotes.GOOD.current_price).toBe(50)
+      expect(store.quotes.BAD).toBeUndefined()
+      expect(store.error).toBeNull()
+    })
+
+    it('dedupes and uppercases tickers, skipping blanks', async () => {
+      api.stocks.getQuote.mockResolvedValue({ data: { ticker: 'AAPL', current_price: 1, daily_change_pct: 0 } })
+
+      await store.fetchQuotes(['aapl', 'AAPL', null, ''])
+
+      expect(api.stocks.getQuote).toHaveBeenCalledTimes(1)
+      expect(api.stocks.getQuote).toHaveBeenCalledWith('AAPL', { skipErrorToast: true })
+    })
+
+    it('does nothing when ticker list is empty', async () => {
+      await store.fetchQuotes([])
+      expect(api.stocks.getQuote).not.toHaveBeenCalled()
     })
   })
 })

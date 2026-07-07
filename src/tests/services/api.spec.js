@@ -182,7 +182,13 @@ describe('API Service', () => {
     it('getQuote calls GET /stocks/:ticker/quote', async () => {
       mockApi.get.mockResolvedValue({ data: {} })
       await stocks.getQuote('AAPL')
-      expect(mockApi.get).toHaveBeenCalledWith('/stocks/AAPL/quote')
+      expect(mockApi.get).toHaveBeenCalledWith('/stocks/AAPL/quote', {})
+    })
+
+    it('getQuote forwards request config such as skipErrorToast', async () => {
+      mockApi.get.mockResolvedValue({ data: {} })
+      await stocks.getQuote('AAPL', { skipErrorToast: true })
+      expect(mockApi.get).toHaveBeenCalledWith('/stocks/AAPL/quote', { skipErrorToast: true })
     })
 
     it('getDetail calls GET /stocks/:ticker/detail', async () => {

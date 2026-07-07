@@ -112,6 +112,11 @@ export async function setupBaseRoutes(page) {
   await page.route('**/api/v1/users/1/holdings-performance', (route) => {
     route.fulfill({ json: { holdings: [], total_current_value: 0, total_cost_basis: 0, total_unrealized_gain_loss: 0 } })
   })
+
+  // Stock quotes (non-blocking, watchlist detail; 404 = card renders without a quote)
+  await page.route('**/api/v1/stocks/*/quote', (route) => {
+    route.fulfill({ status: 404, json: { detail: 'Quote unavailable' } })
+  })
 }
 
 /**
